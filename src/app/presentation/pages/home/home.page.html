@@ -97,7 +97,13 @@
                 <h2 [class.completed]="t.completed">{{ t.title }}</h2>
                 <p class="meta">
                   <ng-container *ngIf="t.category; else noCategory">
-                    <ion-chip size="small" [style.--background]="t.category.color || '#5260ff'" color="light">
+                    <ion-chip
+                      size="small"
+                      [style.--background]="t.category.color || '#5260ff'"
+                      color="light"
+                      class="chip-with-icon"
+                    >
+                      <ion-icon name="bookmark" aria-hidden="true"></ion-icon>
                       <ion-label>{{ t.category.name }}</ion-label>
                     </ion-chip>
                   </ng-container>
@@ -109,8 +115,8 @@
               <ion-select
                 slot="end"
                 interface="popover"
-                [value]="t.categoryId ?? 'none'"
-                (ionChange)="assignCategory(t.id, $event.detail.value)"
+                [ngModel]="t.categoryId ?? 'none'"
+                (ngModelChange)="assignCategory(t.id, $event)"
               >
                 <ion-select-option value="none">Sin categoría</ion-select-option>
                 <ion-select-option *ngFor="let c of vm.categories; trackBy: trackCategory" [value]="c.id">
@@ -140,7 +146,13 @@
         </ion-button>
         <ion-list *ngIf="vm.categorySummary.length; else emptyCategories">
           <ion-item *ngFor="let summary of vm.categorySummary; trackBy: trackCategorySummary">
-            <ion-chip slot="start" [style.--background]="summary.category.color || '#5260ff'" color="light">
+            <ion-chip
+              slot="start"
+              [style.--background]="summary.category.color || '#5260ff'"
+              color="light"
+              class="chip-with-icon"
+            >
+              <ion-icon name="bookmark" aria-hidden="true"></ion-icon>
               <ion-label>{{ summary.category.name }}</ion-label>
             </ion-chip>
             <ion-label>
