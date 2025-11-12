@@ -56,6 +56,7 @@
       <ion-card-content>
         <p>Captura los detalles en un modal claro con vista previa de la categoría.</p>
         <ion-button expand="block" size="large" (click)="openTaskModal(vm.categories)">
+          <ion-icon name="add" slot="start"></ion-icon>
           Nueva tarea
         </ion-button>
       </ion-card-content>
@@ -133,7 +134,10 @@
         <ion-card-title>Categorías</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-button expand="block" fill="outline" (click)="openCategoryForm()">Crear categoría</ion-button>
+        <ion-button expand="block" fill="outline" (click)="openCategoryForm()">
+          <ion-icon name="bookmark-outline" slot="start"></ion-icon>
+          Crear categoría
+        </ion-button>
         <ion-list *ngIf="vm.categorySummary.length; else emptyCategories">
           <ion-item *ngFor="let summary of vm.categorySummary; trackBy: trackCategorySummary">
             <ion-chip slot="start" [style.--background]="summary.category.color || '#5260ff'" color="light">
@@ -164,6 +168,16 @@
         </div>
       </ion-card-content>
     </ion-card>
+    <ion-fab class="action-fab" slot="fixed" horizontal="end" vertical="bottom">
+      <ion-fab-button color="primary" (click)="openTaskModal(vm.categories)" aria-label="Crear nueva tarea">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-list side="top">
+        <ion-fab-button color="tertiary" (click)="openCategoryForm()" aria-label="Crear nueva categoría">
+          <ion-icon name="bookmark-outline"></ion-icon>
+        </ion-fab-button>
+      </ion-fab-list>
+    </ion-fab>
   </ng-container>
 
   <ng-template #loading>

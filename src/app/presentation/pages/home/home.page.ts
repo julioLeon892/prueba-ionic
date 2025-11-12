@@ -10,7 +10,7 @@ import {
   IonButton, IonList, IonLabel, IonCheckbox,
   IonCard, IonCardHeader, IonCardTitle, IonCardContent,
   IonBadge, IonChip, IonText, IonItemDivider,
-  IonIcon, IonSpinner
+  IonIcon, IonSpinner, IonFab, IonFabButton, IonFabList
 } from '@ionic/angular/standalone';
 
 import { combineLatest } from 'rxjs';
@@ -46,7 +46,7 @@ import { FirebaseError } from 'firebase/app';
     IonButton, IonList, IonLabel, IonCheckbox,
     IonCard, IonCardHeader, IonCardTitle, IonCardContent,
     IonBadge, IonChip, IonText, IonItemDivider,
-    IonIcon, IonSpinner
+    IonIcon, IonSpinner, IonFab, IonFabButton, IonFabList
   ]
 })
 export class HomePage {
@@ -104,47 +104,55 @@ export class HomePage {
   }
 
   async openTaskModal(categories: ReadonlyArray<Category>) {
-    const modal = await this.modalCtrl.create({
-      component: TaskFormModalComponent,
-      componentProps: { categories },
-      breakpoints: [0, 0.55, 0.85],
-      initialBreakpoint: 0.6,
-    });
+    try {
+      const modal = await this.modalCtrl.create({
+        component: TaskFormModalComponent,
+        componentProps: { categories },
+        breakpoints: [0, 0.55, 0.85],
+        initialBreakpoint: 0.6,
+      });
 
-    await modal.present();
-    const { data, role } = await modal.onWillDismiss<TaskModalResult>();
-    if (role === 'confirm' && data) {
-      await this.runAction(
-        () => this.addTask.execute(data.title, data.categoryId),
-        'No pudimos crear la tarea',
-      );
+      await modal.present();
+      const { data, role } = await modal.onWillDismiss<TaskModalResult>();
+      if (role === 'confirm' && data) {
+        await this.runAction(
+          () => this.addTask.execute(data.title, data.categoryId),
+          'No pudimos crear la tarea',
+        );
+      }
+    } catch (error) {
+      await this.presentErrorToast('No pudimos abrir el formulario de tarea', error);
     }
   }
 
   async openCategoryForm(category?: Category) {
-    const modal = await this.modalCtrl.create({
-      component: CategoryFormModalComponent,
-      componentProps: { category },
-      breakpoints: [0, 0.55, 0.85],
-      initialBreakpoint: 0.6,
-    });
+    try {
+      const modal = await this.modalCtrl.create({
+        component: CategoryFormModalComponent,
+        componentProps: { category },
+        breakpoints: [0, 0.55, 0.85],
+        initialBreakpoint: 0.6,
+      });
 
-    await modal.present();
-    const { data, role } = await modal.onWillDismiss<{ name: string; color?: string }>();
-    if (role !== 'confirm' || !data) {
-      return;
-    }
+      await modal.present();
+      const { data, role } = await modal.onWillDismiss<{ name: string; color?: string }>();
+      if (role !== 'confirm' || !data) {
+        return;
+      }
 
-    if (category) {
-      await this.runAction(
-        () => this.updateCategory.execute(category.id, data.name, data.color),
-        'No pudimos actualizar la categoría',
-      );
-    } else {
-      await this.runAction(
-        () => this.createCategory.execute(data.name, data.color),
-        'No pudimos crear la categoría',
-      );
+      if (category) {
+        await this.runAction(
+          () => this.updateCategory.execute(category.id, data.name, data.color),
+          'No pudimos actualizar la categoría',
+        );
+      } else {
+        await this.runAction(
+          () => this.createCategory.execute(data.name, data.color),
+          'No pudimos crear la categoría',
+        );
+      }
+    } catch (error) {
+      await this.presentErrorToast('No pudimos abrir el formulario de categoría', error);
     }
   }
 

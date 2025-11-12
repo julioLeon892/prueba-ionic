@@ -129,6 +129,15 @@ describe('HomePage', () => {
     expect(addTask.execute).not.toHaveBeenCalled();
   });
 
+  it('should surface an error toast if the task modal fails to open', async () => {
+    toastCtrl.create.calls.reset();
+    modalCtrl.create.and.callFake(async () => { throw new Error('boom'); });
+
+    await component.openTaskModal([]);
+
+    expect(toastCtrl.create).toHaveBeenCalled();
+  });
+
   it('should change filter and propagate to store', () => {
     component.onCatChange('work');
     expect(component.selectedCat).toBe('work');
@@ -170,6 +179,15 @@ describe('HomePage', () => {
     await component.openCategoryForm(category);
 
     expect(updateCategory.execute).toHaveBeenCalledWith('1', 'Actualizada', '#abcdef');
+  });
+
+  it('should surface an error toast if the category modal fails to open', async () => {
+    toastCtrl.create.calls.reset();
+    modalCtrl.create.and.callFake(async () => { throw new Error('boom'); });
+
+    await component.openCategoryForm();
+
+    expect(toastCtrl.create).toHaveBeenCalled();
   });
 
   it('should confirm deletion of category', async () => {
