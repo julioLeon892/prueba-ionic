@@ -1,27 +1,40 @@
 import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
 import {
-  getRemoteConfig,
   fetchAndActivate,
   getBoolean,
+  getRemoteConfig,
   getString,
-  RemoteConfig
+  RemoteConfig,
 } from 'firebase/remote-config';
-import { firebaseConfig } from '../../firebase.config'; // o tu environments
+import { firebaseConfig } from '../../firebase.config';
+import { IonicStorageService } from '../storage/ionic-storage.service';
+
+interface RemoteConfigSnapshot {
+  featureEnableBulkActions: boolean;
+  welcome: string;
+  fetchedAt?: string;
+}
+
+const RC_CACHE_KEY = 'remote-config:last-snapshot';
+const DEFAULT_SNAPSHOT: RemoteConfigSnapshot = {
+  featureEnableBulkActions: false,
+  welcome: 'Hola',
+};
 
 @Injectable({ providedIn: 'root' })
 export class RemoteConfigService {
   private app = initializeApp(firebaseConfig);
   private rc: RemoteConfig = getRemoteConfig(this.app);
+  private snapshot: RemoteConfigSnapshot = { ...DEFAULT_SNAPSHOT };
+  private restored = false;
 
-  constructor() {
-    // ✅ Incluye ambos campos: fetchTimeoutMillis y minimumFetchIntervalMillis
+  constructor(private storage: IonicStorageService) {
     this.rc.settings = {
-      fetchTimeoutMillis: 10_000,          // espera máx. 10s por la respuesta
-      minimumFetchIntervalMillis: 60_000,  // cachea 60s en dev (en prod suele ser 12h)
+      fetchTimeoutMillis: 10_000,
+      minimumFetchIntervalMillis: 60_000,
     };
 
-    // ✅ Defaults tipados sin "as any"
     this.rc.defaultConfig = {
       feature_enableBulkActions: false,
       ui_welcome: 'Hola',
@@ -29,14 +42,51 @@ export class RemoteConfigService {
   }
 
   async init() {
-    await fetchAndActivate(this.rc);
+    await this.restoreFromCache();
+
+    try {
+      await fetchAndActivate(this.rc);
+      await this.refreshSnapshotFromRemote();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('[RemoteConfig] fetch failed, using cached/default values', err);
+    }
+
+    return this.snapshot;
   }
 
   isBulkActionsEnabled() {
-    return getBoolean(this.rc, 'feature_enableBulkActions');
+    return this.snapshot.featureEnableBulkActions;
   }
 
   getWelcomeMessage() {
-    return getString(this.rc, 'ui_welcome') || 'Hola';
+    return this.snapshot.welcome || DEFAULT_SNAPSHOT.welcome;
+  }
+
+  getLastSync(): string | undefined {
+    return this.snapshot.fetchedAt;
+  }
+
+  private async restoreFromCache() {
+    if (this.restored) {
+      return;
+    }
+
+    this.restored = true;
+    const cached = await this.storage.get<RemoteConfigSnapshot | null>(RC_CACHE_KEY, null);
+    if (cached) {
+      this.snapshot = { ...cached };
+    }
+  }
+
+  private async refreshSnapshotFromRemote() {
+    const latest: RemoteConfigSnapshot = {
+      featureEnableBulkActions: getBoolean(this.rc, 'feature_enableBulkActions'),
+      welcome: getString(this.rc, 'ui_welcome') || DEFAULT_SNAPSHOT.welcome,
+      fetchedAt: new Date().toISOString(),
+    };
+
+    this.snapshot = latest;
+    await this.storage.set(RC_CACHE_KEY, latest);
   }
 }

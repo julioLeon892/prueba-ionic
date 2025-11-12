@@ -88,6 +88,7 @@ Los tests cubren el `TodoStore` (filtrado, estadísticas y resúmenes) y los nue
    - `feature_enableBulkActions`: habilita acciones masivas.
    - `ui_welcome`: mensaje mostrado cuando el flag está activo.
 4. **Demo**: al activar `feature_enableBulkActions = true`, aparecerá en la UI la tarjeta con botones para completar/reabrir todas las tareas y limpiar completadas.
+5. **Persistencia de flags**: la app cachea el último estado de Remote Config en almacenamiento local para mantener los flags disponibles incluso si la siguiente sincronización falla o no hay conectividad.
 
 ## ♻️ Infrastructure as Code
 - `Dockerfile` + `docker-compose.yml`: reproducen la infraestructura local/CI.
