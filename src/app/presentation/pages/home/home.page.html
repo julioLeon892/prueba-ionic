@@ -55,23 +55,34 @@
       </ion-card-header>
       <ion-card-content>
         <p>Captura los detalles en un modal claro con vista previa de la categoría.</p>
-        <ion-button expand="block" size="large" (click)="openTaskModal(vm.categories)">
+        <ion-button expand="block" size="large" class="cta-button" (click)="openTaskModal(vm.categories)">
           <ion-icon name="add" slot="start"></ion-icon>
           Nueva tarea
         </ion-button>
       </ion-card-content>
     </ion-card>
 
-    <ion-item lines="none" class="filter-item">
-      <ion-label>Filtrar por categoría</ion-label>
-      <ion-select [(ngModel)]="selectedCat" name="filterCategory" (ngModelChange)="onCatChange($event)" interface="popover">
-        <ion-select-option value="all">Todas</ion-select-option>
-        <ion-select-option value="none">Sin categoría</ion-select-option>
-        <ion-select-option *ngFor="let c of vm.categories; trackBy: trackCategory" [value]="c.id">
-          {{ c.name }}
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
+    <ion-card class="filter-card">
+      <ion-card-content>
+        <div class="filter-controls">
+          <span class="filter-label">Filtrar por categoría</span>
+          <ion-select
+            class="filter-select"
+            aria-label="Filtrar por categoría"
+            [(ngModel)]="selectedCat"
+            name="filterCategory"
+            (ngModelChange)="onCatChange($event)"
+            interface="popover"
+          >
+            <ion-select-option value="all">Todas</ion-select-option>
+            <ion-select-option value="none">Sin categoría</ion-select-option>
+            <ion-select-option *ngFor="let c of vm.categories; trackBy: trackCategory" [value]="c.id">
+              {{ c.name }}
+            </ion-select-option>
+          </ion-select>
+        </div>
+      </ion-card-content>
+    </ion-card>
 
     <ion-card *ngIf="bulkEnabled" class="bulk-card ion-margin-bottom">
       <ion-card-header>
@@ -97,7 +108,12 @@
                 <h2 [class.completed]="t.completed">{{ t.title }}</h2>
                 <p class="meta">
                   <ng-container *ngIf="t.category; else noCategory">
-                    <ion-chip size="small" [style.--background]="t.category.color || '#5260ff'" color="light">
+                    <ion-chip
+                      size="small"
+                      [ngStyle]="categoryChipStyle(t.category.color)"
+                      class="chip-with-icon"
+                    >
+                      <ion-icon name="bookmark" aria-hidden="true"></ion-icon>
                       <ion-label>{{ t.category.name }}</ion-label>
                     </ion-chip>
                   </ng-container>
@@ -109,8 +125,8 @@
               <ion-select
                 slot="end"
                 interface="popover"
-                [value]="t.categoryId ?? 'none'"
-                (ionChange)="assignCategory(t.id, $event.detail.value)"
+                [ngModel]="t.categoryId ?? 'none'"
+                (ngModelChange)="assignCategory(t.id, $event)"
               >
                 <ion-select-option value="none">Sin categoría</ion-select-option>
                 <ion-select-option *ngFor="let c of vm.categories; trackBy: trackCategory" [value]="c.id">
@@ -134,13 +150,18 @@
         <ion-card-title>Categorías</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-button expand="block" fill="outline" (click)="openCategoryForm()">
-          <ion-icon name="bookmark-outline" slot="start"></ion-icon>
-          Crear categoría
+        <ion-button expand="block" size="large" class="cta-button" (click)="openCategoryForm()">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Nueva categoría
         </ion-button>
         <ion-list *ngIf="vm.categorySummary.length; else emptyCategories">
           <ion-item *ngFor="let summary of vm.categorySummary; trackBy: trackCategorySummary">
-            <ion-chip slot="start" [style.--background]="summary.category.color || '#5260ff'" color="light">
+            <ion-chip
+              slot="start"
+              [ngStyle]="categoryChipStyle(summary.category.color)"
+              class="chip-with-icon"
+            >
+              <ion-icon name="bookmark" aria-hidden="true"></ion-icon>
               <ion-label>{{ summary.category.name }}</ion-label>
             </ion-chip>
             <ion-label>
@@ -158,7 +179,6 @@
         <ng-template #emptyCategories>
           <p class="empty">Crea tu primera categoría para organizar las tareas.</p>
         </ng-template>
-        <ion-item-divider></ion-item-divider>
         <div class="uncategorized-summary">
           <ion-chip color="medium" outline="true">Sin categoría</ion-chip>
           <ion-text>

@@ -9,7 +9,7 @@ import {
   IonItem, IonSelect, IonSelectOption,
   IonButton, IonList, IonLabel, IonCheckbox,
   IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-  IonBadge, IonChip, IonText, IonItemDivider,
+  IonBadge, IonChip, IonText,
   IonIcon, IonSpinner
 } from '@ionic/angular/standalone';
 
@@ -45,7 +45,7 @@ import { FirebaseError } from 'firebase/app';
     IonItem, IonSelect, IonSelectOption,
     IonButton, IonList, IonLabel, IonCheckbox,
     IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-    IonBadge, IonChip, IonText, IonItemDivider,
+    IonBadge, IonChip, IonText,
     IonIcon, IonSpinner
   ]
 })
@@ -177,6 +177,102 @@ export class HomePage {
   trackTask = (_: number, task: TaskWithCategory) => task.id;
   trackCategory = (_: number, category: Category) => category.id;
   trackCategorySummary = (_: number, summary: CategorySummary) => summary.category.id;
+
+  private readonly ionicColorNames = new Set([
+    'primary',
+    'secondary',
+    'tertiary',
+    'success',
+    'warning',
+    'danger',
+    'light',
+    'medium',
+    'dark',
+  ]);
+
+  categoryChipStyle(color?: string | null): Record<string, string> {
+    const { background, foreground } = this.resolveChipColors(color);
+    return {
+      background,
+      color: foreground,
+      '--background': background,
+      '--color': foreground,
+      '--color-activated': foreground,
+      '--color-focused': foreground,
+      '--border-color': background,
+    };
+  }
+
+  private resolveChipColors(color?: string | null): { background: string; foreground: string } {
+    const fallback = {
+      background: 'var(--ion-color-primary)',
+      foreground: 'var(--ion-color-primary-contrast)',
+    } as const;
+
+    if (!color) {
+      return fallback;
+    }
+
+    const trimmed = color.trim();
+    if (!trimmed) {
+      return fallback;
+    }
+
+    const ionicName = this.asIonicColorName(trimmed);
+    if (ionicName) {
+      return {
+        background: `var(--ion-color-${ionicName})`,
+        foreground: `var(--ion-color-${ionicName}-contrast)`,
+      };
+    }
+
+    if (trimmed.startsWith('var(')) {
+      return {
+        background: trimmed,
+        foreground: 'var(--ion-color-light-contrast, #ffffff)',
+      };
+    }
+
+    const hex = this.normalizeHex(trimmed);
+    if (hex) {
+      return {
+        background: hex,
+        foreground: this.preferredTextColor(hex),
+      };
+    }
+
+    return {
+      background: trimmed,
+      foreground: 'var(--ion-color-light-contrast, #ffffff)',
+    };
+  }
+
+  private asIonicColorName(value: string): string | null {
+    const normalized = value.toLowerCase();
+    return this.ionicColorNames.has(normalized) ? normalized : null;
+  }
+
+  private normalizeHex(color: string): string | null {
+    const match = color.match(/^#([\da-f]{3}|[\da-f]{6})$/i);
+    if (!match) {
+      return null;
+    }
+
+    const hex = match[1];
+    if (hex.length === 3) {
+      return `#${hex.split('').map((digit) => digit + digit).join('').toLowerCase()}`;
+    }
+
+    return `#${hex.toLowerCase()}`;
+  }
+
+  private preferredTextColor(hex: string): string {
+    const red = parseInt(hex.slice(1, 3), 16) / 255;
+    const green = parseInt(hex.slice(3, 5), 16) / 255;
+    const blue = parseInt(hex.slice(5, 7), 16) / 255;
+    const luminance = 0.299 * red + 0.587 * green + 0.114 * blue;
+    return luminance > 0.6 ? '#1f1f1f' : '#ffffff';
+  }
 
   private safeRun(action: () => Promise<void>, errorMessage: string) {
     void this.runAction(action, errorMessage);
