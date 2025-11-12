@@ -118,6 +118,7 @@ describe('HomePage', () => {
 
     expect(modalCtrl.create).toHaveBeenCalled();
     expect(latestModalOptions.component).toBeDefined();
+    expect(latestModalOptions.cssClass).toBe('dialog-modal');
     expect(addTask.execute).toHaveBeenCalledWith('Nueva tarea', 'cat-1');
   });
 
@@ -168,6 +169,7 @@ describe('HomePage', () => {
     await component.openCategoryForm();
 
     expect(modalCtrl.create).toHaveBeenCalled();
+    expect(latestModalOptions.cssClass).toBe('dialog-modal');
     expect(createCategory.execute).toHaveBeenCalledWith('Trabajo', '#123456');
   });
 
@@ -179,6 +181,7 @@ describe('HomePage', () => {
     await component.openCategoryForm(category);
 
     expect(updateCategory.execute).toHaveBeenCalledWith('1', 'Actualizada', '#abcdef');
+    expect(latestModalOptions.cssClass).toBe('dialog-modal');
   });
 
   it('should surface an error toast if the category modal fails to open', async () => {

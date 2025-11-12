@@ -5,7 +5,7 @@ import { AlertController, ModalController, ToastController } from '@ionic/angula
 
 // Componentes standalone de Ionic usados en el HTML
 import {
-  IonHeader, IonToolbar, IonTitle, IonContent, IonFooter,
+  IonHeader, IonToolbar, IonTitle, IonContent,
   IonItem, IonSelect, IonSelectOption,
   IonButton, IonList, IonLabel, IonCheckbox,
   IonCard, IonCardHeader, IonCardTitle, IonCardContent,
@@ -41,7 +41,7 @@ import { FirebaseError } from 'firebase/app';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule, FormsModule,
-    IonHeader, IonToolbar, IonTitle, IonContent, IonFooter,
+    IonHeader, IonToolbar, IonTitle, IonContent,
     IonItem, IonSelect, IonSelectOption,
     IonButton, IonList, IonLabel, IonCheckbox,
     IonCard, IonCardHeader, IonCardTitle, IonCardContent,
@@ -108,8 +108,7 @@ export class HomePage {
       const modal = await this.modalCtrl.create({
         component: TaskFormModalComponent,
         componentProps: { categories },
-        breakpoints: [0, 0.55, 0.85],
-        initialBreakpoint: 0.6,
+        cssClass: 'dialog-modal',
       });
 
       await modal.present();
@@ -130,8 +129,7 @@ export class HomePage {
       const modal = await this.modalCtrl.create({
         component: CategoryFormModalComponent,
         componentProps: { category },
-        breakpoints: [0, 0.55, 0.85],
-        initialBreakpoint: 0.6,
+        cssClass: 'dialog-modal',
       });
 
       await modal.present();
