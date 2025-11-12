@@ -6,6 +6,27 @@
 
 <ion-content class="ion-padding">
   <ng-container *ngIf="vm$ | async as vm; else loading">
+    <div class="sync-indicator" *ngIf="sync$ | async as sync">
+      <ion-chip
+        [color]="sync.state === 'offline' ? 'danger' : sync.state === 'online' ? 'success' : 'medium'"
+        outline="true"
+      >
+        <ion-icon
+          slot="start"
+          [name]="sync.state === 'offline' ? 'cloud-offline-outline' : sync.state === 'online' ? 'cloud-done-outline' : 'cloud-upload-outline'"
+        ></ion-icon>
+        <ion-label>
+          <ng-container [ngSwitch]="sync.state">
+            <span *ngSwitchCase="'connecting'">Conectando con Firebase…</span>
+            <span *ngSwitchCase="'syncing'">Sincronizando cambios…</span>
+            <span *ngSwitchCase="'offline'">Modo offline: usando datos locales</span>
+            <span *ngSwitchDefault>Sincronización en la nube activa</span>
+          </ng-container>
+          <small *ngIf="sync.message" class="sync-message">{{ sync.message }}</small>
+        </ion-label>
+      </ion-chip>
+    </div>
+
     <ion-card class="summary-card">
       <ion-card-header>
         <ion-card-title>Resumen</ion-card-title>

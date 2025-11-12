@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AlertController } from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular';
 
 // Componentes standalone de Ionic usados en el HTML
 import {
@@ -28,6 +28,8 @@ import { SetTaskCategoryUseCase } from '../../../domain/usecases/set-task-catego
 import { CompleteAllTasksUseCase } from '../../../domain/usecases/complete-all-tasks.usecase';
 import { ClearCompletedTasksUseCase } from '../../../domain/usecases/clear-completed-tasks.usecase';
 import { CategorySummary } from '../../../core/models/category-summary';
+import { CloudSyncService } from '../../../infrastructure/firebase/cloud-sync.service';
+import { FirebaseError } from 'firebase/app';
 
 @Component({
   standalone: true,
@@ -54,6 +56,8 @@ export class HomePage {
     stats: this.store.stats$,
   });
 
+  readonly sync$ = this.cloudSync.state$();
+
   // estado local
   selectedCat: string | 'all' | 'none' = 'all';
   newTitle = '';
@@ -75,7 +79,9 @@ export class HomePage {
     private completeAllTasks: CompleteAllTasksUseCase,
     private clearCompletedTasks: ClearCompletedTasksUseCase,
     private rc: RemoteConfigService,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private toastCtrl: ToastController,
+    private cloudSync: CloudSyncService,
   ) {}
 
   ngOnInit() {
@@ -88,9 +94,11 @@ export class HomePage {
     const title = this.newTitle.trim();
     if (!title) return;
     const category = this.newTaskCategory === 'none' ? undefined : this.newTaskCategory;
-    await this.addTask.execute(title, category);
-    this.newTitle = '';
-    this.newTaskCategory = 'none';
+    const ok = await this.runAction(() => this.addTask.execute(title, category), 'No pudimos crear la tarea');
+    if (ok) {
+      this.newTitle = '';
+      this.newTaskCategory = 'none';
+    }
   }
 
   onCatChange(v: string | 'all' | 'none') {
@@ -98,12 +106,12 @@ export class HomePage {
     this.store.selectCategory(v);
   }
 
-  toggle(id: string) { return this.toggleUC.execute(id); }
-  remove(id: string) { return this.delUC.execute(id); }
+  toggle(id: string) { this.safeRun(() => this.toggleUC.execute(id), 'No pudimos actualizar la tarea'); }
+  remove(id: string) { this.safeRun(() => this.delUC.execute(id), 'No pudimos eliminar la tarea'); }
 
   assignCategory(taskId: string, categoryId: string | 'none') {
     const normalized = categoryId === 'none' ? undefined : categoryId;
-    return this.setTaskCategory.execute(taskId, normalized);
+    this.safeRun(() => this.setTaskCategory.execute(taskId, normalized), 'No pudimos actualizar la categoría');
   }
 
   async openCategoryForm(category?: Category) {
@@ -133,9 +141,9 @@ export class HomePage {
             if (!name) { return false; }
             const color = data.color ? String(data.color) : undefined;
             if (category) {
-              void this.updateCategory.execute(category.id, name, color);
+              this.safeRun(() => this.updateCategory.execute(category.id, name, color), 'No pudimos actualizar la categoría');
             } else {
-              void this.createCategory.execute(name, color);
+              this.safeRun(() => this.createCategory.execute(name, color), 'No pudimos crear la categoría');
             }
             return true;
           }
@@ -155,7 +163,7 @@ export class HomePage {
         {
           text: 'Eliminar',
           role: 'destructive',
-          handler: () => { void this.deleteCategory.execute(category.id); }
+          handler: () => { this.safeRun(() => this.deleteCategory.execute(category.id), 'No pudimos eliminar la categoría'); }
         }
       ]
     });
@@ -163,10 +171,53 @@ export class HomePage {
     await alert.present();
   }
 
-  setAll(completed: boolean) { return this.completeAllTasks.execute(completed); }
-  clearCompleted() { return this.clearCompletedTasks.execute(); }
+  setAll(completed: boolean) { this.safeRun(() => this.completeAllTasks.execute(completed), 'No pudimos actualizar las tareas'); }
+  clearCompleted() { this.safeRun(() => this.clearCompletedTasks.execute(), 'No pudimos limpiar las tareas completadas'); }
 
   trackTask = (_: number, task: TaskWithCategory) => task.id;
   trackCategory = (_: number, category: Category) => category.id;
   trackCategorySummary = (_: number, summary: CategorySummary) => summary.category.id;
+
+  private safeRun(action: () => Promise<void>, errorMessage: string) {
+    void this.runAction(action, errorMessage);
+  }
+
+  private async runAction(action: () => Promise<void>, errorMessage: string): Promise<boolean> {
+    try {
+      await action();
+      return true;
+    } catch (error) {
+      await this.presentErrorToast(errorMessage, error);
+      return false;
+    }
+  }
+
+  private async presentErrorToast(message: string, error: unknown) {
+    console.error(message, error);
+    const toast = await this.toastCtrl.create({
+      message: `${message}. ${this.describeError(error)}`,
+      color: 'danger',
+      duration: 4000,
+      position: 'bottom',
+      buttons: [{ text: 'Cerrar', role: 'cancel' }],
+    });
+    await toast.present();
+  }
+
+  private describeError(error: unknown): string {
+    if (error instanceof FirebaseError) {
+      switch (error.code) {
+        case 'permission-denied':
+          return 'Verifica las reglas de seguridad de tu proyecto Firebase.';
+        case 'unavailable':
+          return 'El servicio de Firestore no está disponible temporalmente.';
+        default:
+          return error.message;
+      }
+    }
+    if (error instanceof Error) {
+      return error.message;
+    }
+    return 'Inténtalo nuevamente.';
+  }
 }

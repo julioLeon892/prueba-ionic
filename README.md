@@ -7,10 +7,12 @@ Aplicación **To-Do Híbrida** construida con Ionic + Angular siguiendo principi
 - **Gestión de categorías**: crear, editar y eliminar categorías con soporte de color.
 - **Filtrado avanzado**: filtra por categoría específica o tareas sin categoría.
 - **Feature flag remoto**: Firebase Remote Config habilita/inhabilita acciones masivas (completar todas, revertir y limpiar completadas).
+- **Sincronización con Firebase mejorada**: caché local con reintentos y chip de estado en la UI para conocer si los cambios ya
+  se enviaron a la nube o se mantienen en modo offline.
 - **Optimización de rendimiento**:
   - `ChangeDetectionStrategy.OnPush` + `provideZoneChangeDetection` con `event/run coalescing`.
   - Derivación reactiva memoizada (`shareReplay`) y `trackBy` para listas extensas.
-  - Persistencia local eficiente sobre `@ionic/storage`.
+  - Persistencia local eficiente sobre `@ionic/storage` y caché de Firestore para cargas inmediatas.
 - **Clean Architecture**: capas `presentation`, `core`, `domain`, `data`, `infrastructure`.
 - **Docker & IaC**: `Dockerfile`, `docker-compose.yml` y plantilla de Remote Config (`firebase.json` + `remoteconfig.template.json`).
 - **Pruebas unitarias** con Karma/Jasmine (`npm run test:ci`).
@@ -89,6 +91,15 @@ Los tests cubren el `TodoStore` (filtrado, estadísticas y resúmenes) y los nue
    - `ui_welcome`: mensaje mostrado cuando el flag está activo.
 4. **Demo**: al activar `feature_enableBulkActions = true`, aparecerá en la UI la tarjeta con botones para completar/reabrir todas las tareas y limpiar completadas.
 
+## ☁️ Firebase Firestore
+1. Crea o selecciona un proyecto en [Firebase Console](https://console.firebase.google.com/).
+2. Entra a **Firestore Database** → **Create database** y habilítala (modo de prueba es válido durante el desarrollo).
+3. Desde la misma consola copia la configuración Web y reemplaza los valores en `src/app/firebase.config.ts` (hay un ejemplo en `firebase-sdk.txt`).
+4. Las colecciones `tasks` y `categories` se crean automáticamente al usar la aplicación; no hace falta preconfigurarlas.
+5. Si la app no puede conectarse, activará el modo offline: verás un chip indicando que los cambios quedan en caché y se reintentarán cuando la conexión vuelva.
+
+> **Importante:** esta app utiliza **Cloud Firestore**. Revisa esta sección de la consola (no Realtime Database) para visualizar los documentos generados.
+
 ## ♻️ Infrastructure as Code
 - `Dockerfile` + `docker-compose.yml`: reproducen la infraestructura local/CI.
 - `firebase.json` + `remoteconfig.template.json`: definen Remote Config como código, versionable y desplegable con Firebase CLI.
@@ -105,7 +116,7 @@ En `docs/screenshots/` puedes almacenar evidencias (imágenes o GIFs). Añade tu
   - Memoización con `shareReplay` en el store para estadísticas y filtros.
   - Coalescencia de eventos/cambios en Angular para reducir ciclos de detección.
   - `trackBy` y manipulación inmutable para minimizar renders en listas extensas.
-  - Almacenamiento local con cargas iniciales asincrónicas y persistencia incremental.
+  - Almacenamiento local con cargas iniciales asincrónicas, caché de Firestore y sincronización optimista con reintentos.
 - **Calidad y mantenibilidad:**
   - Separación estricta de capas (domain/data/presentation).
   - Casos de uso dedicados para cada acción; fácil de testear y reutilizar.
