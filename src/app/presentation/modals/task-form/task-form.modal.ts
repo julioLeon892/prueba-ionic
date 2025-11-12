@@ -18,7 +18,7 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { Category } from '../../../core/models/category';
 
 export interface TaskModalResult {

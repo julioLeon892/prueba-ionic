@@ -11,7 +11,7 @@ import { DeleteCategoryUseCase } from '../../../domain/usecases/delete-category.
 import { CompleteAllTasksUseCase } from '../../../domain/usecases/complete-all-tasks.usecase';
 import { ClearCompletedTasksUseCase } from '../../../domain/usecases/clear-completed-tasks.usecase';
 import { RemoteConfigService } from '../../../infrastructure/remote-config/remote-config.service';
-import { AlertController, ModalController, ToastController } from '@ionic/angular';
+import { AlertController, ModalController, ToastController } from '@ionic/angular/standalone';
 import { CloudSyncService } from '../../../infrastructure/firebase/cloud-sync.service';
 import { Category } from '../../../core/models/category';
 
