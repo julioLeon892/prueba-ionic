@@ -20,7 +20,10 @@ import { ToggleTaskUseCase } from '../../../domain/usecases/toggle-task.usecase'
 import { DeleteTaskUseCase } from '../../../domain/usecases/delete-task.usecase';
 import { TaskWithCategory } from '../../../core/models/task-with-category';
 import { Category } from '../../../core/models/category';
-import { RemoteConfigService } from '../../../infrastructure/remote-config/remote-config.service';
+import {
+  RemoteConfigPersistenceStatus,
+  RemoteConfigService,
+} from '../../../infrastructure/remote-config/remote-config.service';
 import { CreateCategoryUseCase } from '../../../domain/usecases/create-category.usecase';
 import { UpdateCategoryUseCase } from '../../../domain/usecases/update-category.usecase';
 import { DeleteCategoryUseCase } from '../../../domain/usecases/delete-category.usecase';
@@ -62,6 +65,7 @@ export class HomePage {
   // Remote Config
   bulkEnabled = false;
   welcome = 'Hola';
+  persistState: RemoteConfigPersistenceStatus = { status: 'idle' };
 
   constructor(
     private store: TodoStore,
@@ -82,6 +86,7 @@ export class HomePage {
     // APP_INITIALIZER ya llamó rc.init(); aquí solo leemos valores
     this.bulkEnabled = this.rc.isBulkActionsEnabled();
     this.welcome = this.rc.getWelcomeMessage();
+    this.persistState = this.rc.getPersistenceState();
   }
 
   async add() {

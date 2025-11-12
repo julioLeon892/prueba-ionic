@@ -50,9 +50,13 @@ describe('HomePage', () => {
     completeAll = jasmine.createSpyObj<CompleteAllTasksUseCase>('CompleteAllTasksUseCase', ['execute']);
     clearCompleted = jasmine.createSpyObj<ClearCompletedTasksUseCase>('ClearCompletedTasksUseCase', ['execute']);
 
-    remoteConfig = jasmine.createSpyObj<RemoteConfigService>('RemoteConfigService', ['isBulkActionsEnabled', 'getWelcomeMessage']);
+    remoteConfig = jasmine.createSpyObj<RemoteConfigService>(
+      'RemoteConfigService',
+      ['isBulkActionsEnabled', 'getWelcomeMessage', 'getPersistenceState']
+    );
     remoteConfig.isBulkActionsEnabled.and.returnValue(true);
     remoteConfig.getWelcomeMessage.and.returnValue('Hola remoto');
+    remoteConfig.getPersistenceState.and.returnValue({ status: 'success', storedAt: '2024-06-01T00:00:00.000Z' });
 
     const presentSpy = jasmine.createSpy('present').and.resolveTo();
     alertCtrl = jasmine.createSpyObj<AlertController>('AlertController', ['create']);
@@ -81,6 +85,7 @@ describe('HomePage', () => {
     component.ngOnInit();
     expect(component.bulkEnabled).toBeTrue();
     expect(component.welcome).toBe('Hola remoto');
+    expect(component.persistState).toEqual({ status: 'success', storedAt: '2024-06-01T00:00:00.000Z' });
   });
 
   it('should add a task and reset local state', async () => {

@@ -1,5 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { RemoteConfigService } from './remote-config.service';
+import {
+  RemoteConfigPersistenceStatus,
+  RemoteConfigService,
+} from './remote-config.service';
 import { IonicStorageService } from '../storage/ionic-storage.service';
 import * as firebaseApp from 'firebase/app';
 import * as firebaseRemoteConfig from 'firebase/remote-config';
@@ -72,6 +75,13 @@ describe('RemoteConfigService', () => {
       featureEnableBulkActions: true,
       welcome: 'Hola Remote Config',
     }));
+
+    const state = service.getPersistenceState() as Extract<
+      RemoteConfigPersistenceStatus,
+      { status: 'success' }
+    >;
+    expect(state.status).toBe('success');
+    expect(state.storedAt).toMatch(/T/);
   });
 
   it('falls back to cached values when the remote config call fails', async () => {
@@ -90,5 +100,28 @@ describe('RemoteConfigService', () => {
     expect(service.isBulkActionsEnabled()).toBeTrue();
     expect(service.getWelcomeMessage()).toBe('Mensaje cacheado');
     expect(setDocSpy).not.toHaveBeenCalled();
+
+    const state = service.getPersistenceState() as Extract<
+      RemoteConfigPersistenceStatus,
+      { status: 'from-cache' }
+    >;
+    expect(state.status).toBe('from-cache');
+    expect(state.fetchedAt).toBe('2024-05-01T00:00:00.000Z');
+  });
+
+  it('reports an error when firestore persistence fails', async () => {
+    fetchSpy.and.resolveTo(true);
+    booleanSpy.and.returnValue(false);
+    stringSpy.and.returnValue('Hola');
+    setDocSpy.and.rejectWith(new Error('permission denied'));
+
+    await service.init();
+
+    const state = service.getPersistenceState() as Extract<
+      RemoteConfigPersistenceStatus,
+      { status: 'error' }
+    >;
+    expect(state.status).toBe('error');
+    expect(state.message).toContain('permission denied');
   });
 });

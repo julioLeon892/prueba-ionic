@@ -49,6 +49,54 @@
       </ion-card-content>
     </ion-card>
 
+    <ion-card class="firebase-card">
+      <ion-card-header>
+        <ion-card-title>Estado de Firebase</ion-card-title>
+        <ion-card-subtitle>Monitorea la sincronización de Remote Config en Firestore</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ng-container [ngSwitch]="persistState.status">
+          <div *ngSwitchCase="'success'" class="status-row success">
+            <ion-icon name="cloud-done-outline"></ion-icon>
+            <div>
+              <strong>Última réplica exitosa</strong>
+              <p>{{ persistState.storedAt | date: 'medium' }}</p>
+              <ion-text color="medium">
+                Colección: <code>remoteConfigSnapshots/latest</code>
+              </ion-text>
+            </div>
+          </div>
+          <div *ngSwitchCase="'from-cache'" class="status-row cache">
+            <ion-icon name="cloud-offline-outline"></ion-icon>
+            <div>
+              <strong>Usando valores cacheados</strong>
+              <p *ngIf="persistState.fetchedAt">Sincronizados el {{ persistState.fetchedAt | date: 'medium' }}</p>
+              <ion-text color="medium">
+                Verifica en Firestore que exista el documento <code>remoteConfigSnapshots/latest</code>.
+              </ion-text>
+            </div>
+          </div>
+          <div *ngSwitchCase="'error'" class="status-row error">
+            <ion-icon name="warning-outline"></ion-icon>
+            <div>
+              <strong>Error al replicar en Firestore</strong>
+              <p>{{ persistState.message }}</p>
+              <ion-text color="medium">
+                Revisa la configuración de Firebase y vuelve a intentar cargar la aplicación.
+              </ion-text>
+            </div>
+          </div>
+          <div *ngSwitchDefault class="status-row idle">
+            <ion-icon name="cloud-outline"></ion-icon>
+            <div>
+              <strong>Inicializando Remote Config…</strong>
+              <p>Los detalles aparecerán en cuanto se sincronice con Firebase.</p>
+            </div>
+          </div>
+        </ng-container>
+      </ion-card-content>
+    </ion-card>
+
     <form (submit)="$event.preventDefault(); add()" class="task-form">
       <ion-card class="add-card">
         <ion-card-header>
@@ -85,7 +133,7 @@
             Consejo: crea tus categorías abajo para agrupar tus tareas rápidamente.
           </ion-note>
 
-          <ion-button expand="block" type="submit" [disabled]="!newTitle?.trim()">Agregar tarea</ion-button>
+          <ion-button expand="block" type="submit" [disabled]="!newTitle.trim()">Agregar tarea</ion-button>
         </ion-card-content>
       </ion-card>
     </form>
@@ -164,9 +212,9 @@
                 <h3 [class.completed]="t.completed">{{ t.title }}</h3>
                 <div class="meta">
                   <ng-container *ngIf="t.category; else noCategory">
-                    <ion-chip class="category-chip" [style.background]="t.category?.color || '#5260ff'" color="light">
+                    <ion-chip class="category-chip" [style.background]="t.category.color || '#5260ff'" color="light">
                       <ion-icon name="folder-outline"></ion-icon>
-                      <ion-label>{{ t.category?.name }}</ion-label>
+                      <ion-label>{{ t.category.name }}</ion-label>
                     </ion-chip>
                   </ng-container>
                   <ng-template #noCategory>

@@ -11,11 +11,17 @@ import { Firestore, doc, getFirestore, setDoc } from 'firebase/firestore';
 import { firebaseConfig } from '../../firebase.config';
 import { IonicStorageService } from '../storage/ionic-storage.service';
 
-interface RemoteConfigSnapshot {
+export interface RemoteConfigSnapshot {
   featureEnableBulkActions: boolean;
   welcome: string;
   fetchedAt?: string;
 }
+
+export type RemoteConfigPersistenceStatus =
+  | { status: 'idle' }
+  | { status: 'from-cache'; fetchedAt?: string }
+  | { status: 'success'; storedAt: string }
+  | { status: 'error'; message: string };
 
 const RC_CACHE_KEY = 'remote-config:last-snapshot';
 const DEFAULT_SNAPSHOT: RemoteConfigSnapshot = {
@@ -30,6 +36,7 @@ export class RemoteConfigService {
   private firestore: Firestore = getFirestore(this.app);
   private snapshot: RemoteConfigSnapshot = { ...DEFAULT_SNAPSHOT };
   private restored = false;
+  private persistenceState: RemoteConfigPersistenceStatus = { status: 'idle' };
 
   constructor(private storage: IonicStorageService) {
     this.rc.settings = {
@@ -52,6 +59,13 @@ export class RemoteConfigService {
     } catch (err) {
       // eslint-disable-next-line no-console
       console.warn('[RemoteConfig] fetch failed, using cached/default values', err);
+      if (this.persistenceState.status === 'idle') {
+        this.persistenceState = {
+          status: 'error',
+          message:
+            err instanceof Error ? err.message : 'Error desconocido al sincronizar Remote Config',
+        };
+      }
     }
 
     return this.snapshot;
@@ -69,6 +83,10 @@ export class RemoteConfigService {
     return this.snapshot.fetchedAt;
   }
 
+  getPersistenceState(): RemoteConfigPersistenceStatus {
+    return { ...this.persistenceState };
+  }
+
   private async restoreFromCache() {
     if (this.restored) {
       return;
@@ -78,6 +96,7 @@ export class RemoteConfigService {
     const cached = await this.storage.get<RemoteConfigSnapshot | null>(RC_CACHE_KEY, null);
     if (cached) {
       this.snapshot = { ...cached };
+      this.persistenceState = { status: 'from-cache', fetchedAt: cached.fetchedAt };
     }
   }
 
@@ -97,13 +116,19 @@ export class RemoteConfigService {
 
     try {
       const latestDoc = doc(this.firestore, 'remoteConfigSnapshots', 'latest');
+      const storedAt = new Date().toISOString();
       await setDoc(latestDoc, {
         ...snapshot,
-        storedAt: new Date().toISOString(),
+        storedAt,
       });
+      this.persistenceState = { status: 'success', storedAt };
     } catch (err) {
       // eslint-disable-next-line no-console
       console.warn('[RemoteConfig] failed to persist snapshot in Firestore', err);
+      this.persistenceState = {
+        status: 'error',
+        message: err instanceof Error ? err.message : 'No se pudo guardar el snapshot en Firestore',
+      };
     }
   }
 }

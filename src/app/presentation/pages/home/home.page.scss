@@ -72,6 +72,55 @@
   margin-top: 1.5rem;
 }
 
+.firebase-card {
+  border-radius: 18px;
+  box-shadow: 0 12px 24px rgba(16, 23, 45, 0.08);
+  margin-top: 1.5rem;
+}
+
+.status-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 0.75rem 0.5rem;
+
+  ion-icon {
+    font-size: 1.8rem;
+  }
+
+  strong {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    margin: 0 0 0.35rem;
+  }
+
+  code {
+    background: rgba(82, 96, 255, 0.1);
+    padding: 0.1rem 0.4rem;
+    border-radius: 6px;
+  }
+}
+
+.status-row.success ion-icon {
+  color: var(--ion-color-success);
+}
+
+.status-row.cache ion-icon {
+  color: var(--ion-color-tertiary);
+}
+
+.status-row.error ion-icon {
+  color: var(--ion-color-danger);
+}
+
+.status-row.idle ion-icon {
+  color: var(--ion-color-medium);
+}
+
 .add-card {
   border-radius: 20px;
   box-shadow: 0 12px 30px rgba(33, 35, 61, 0.12);
