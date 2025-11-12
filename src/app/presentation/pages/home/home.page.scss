@@ -13,9 +13,37 @@
   }
 }
 
+
+.cta-button {
+  --border-radius: 18px;
+  font-weight: 600;
+}
+
+.filter-card {
+  margin: 1rem 0;
+
+  ion-card-content {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+}
+
 .filter-item {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  --background: transparent;
+  --border-radius: 12px;
+  --inner-padding-start: 0;
+  --inner-padding-end: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+
+  ion-label {
+    font-weight: 600;
+  }
+
+  ion-select {
+    min-width: 8rem;
+    text-align: end;
+  }
 }
 
 .completed {

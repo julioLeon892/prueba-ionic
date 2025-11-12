@@ -55,23 +55,32 @@
       </ion-card-header>
       <ion-card-content>
         <p>Captura los detalles en un modal claro con vista previa de la categoría.</p>
-        <ion-button expand="block" size="large" (click)="openTaskModal(vm.categories)">
+        <ion-button expand="block" size="large" class="cta-button" (click)="openTaskModal(vm.categories)">
           <ion-icon name="add" slot="start"></ion-icon>
           Nueva tarea
         </ion-button>
       </ion-card-content>
     </ion-card>
 
-    <ion-item lines="none" class="filter-item">
-      <ion-label>Filtrar por categoría</ion-label>
-      <ion-select [(ngModel)]="selectedCat" name="filterCategory" (ngModelChange)="onCatChange($event)" interface="popover">
-        <ion-select-option value="all">Todas</ion-select-option>
-        <ion-select-option value="none">Sin categoría</ion-select-option>
-        <ion-select-option *ngFor="let c of vm.categories; trackBy: trackCategory" [value]="c.id">
-          {{ c.name }}
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
+    <ion-card class="filter-card">
+      <ion-card-content>
+        <ion-item lines="none" class="filter-item">
+          <ion-label>Filtrar por categoría</ion-label>
+          <ion-select
+            [(ngModel)]="selectedCat"
+            name="filterCategory"
+            (ngModelChange)="onCatChange($event)"
+            interface="popover"
+          >
+            <ion-select-option value="all">Todas</ion-select-option>
+            <ion-select-option value="none">Sin categoría</ion-select-option>
+            <ion-select-option *ngFor="let c of vm.categories; trackBy: trackCategory" [value]="c.id">
+              {{ c.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
 
     <ion-card *ngIf="bulkEnabled" class="bulk-card ion-margin-bottom">
       <ion-card-header>
@@ -139,9 +148,9 @@
         <ion-card-title>Categorías</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-button expand="block" fill="outline" (click)="openCategoryForm()">
-          <ion-icon name="bookmark-outline" slot="start"></ion-icon>
-          Crear categoría
+        <ion-button expand="block" size="large" class="cta-button" (click)="openCategoryForm()">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Nueva categoría
         </ion-button>
         <ion-list *ngIf="vm.categorySummary.length; else emptyCategories">
           <ion-item *ngFor="let summary of vm.categorySummary; trackBy: trackCategorySummary">
