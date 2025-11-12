@@ -1,27 +1,25 @@
 import { Injectable } from '@angular/core';
-import { initializeApp } from 'firebase/app';
 import {
-  getRemoteConfig,
+  RemoteConfig,
   fetchAndActivate,
   getBoolean,
+  getRemoteConfig,
   getString,
-  RemoteConfig
 } from 'firebase/remote-config';
-import { firebaseConfig } from '../../firebase.config'; // o tu environments
+import { FirebaseAppService } from '../firebase/firebase-app.service';
 
 @Injectable({ providedIn: 'root' })
 export class RemoteConfigService {
-  private app = initializeApp(firebaseConfig);
-  private rc: RemoteConfig = getRemoteConfig(this.app);
+  private readonly rc: RemoteConfig;
 
-  constructor() {
-    // ✅ Incluye ambos campos: fetchTimeoutMillis y minimumFetchIntervalMillis
+  constructor(firebase: FirebaseAppService) {
+    this.rc = getRemoteConfig(firebase.app);
+
     this.rc.settings = {
-      fetchTimeoutMillis: 10_000,          // espera máx. 10s por la respuesta
-      minimumFetchIntervalMillis: 60_000,  // cachea 60s en dev (en prod suele ser 12h)
+      fetchTimeoutMillis: 10_000,
+      minimumFetchIntervalMillis: 60_000,
     };
 
-    // ✅ Defaults tipados sin "as any"
     this.rc.defaultConfig = {
       feature_enableBulkActions: false,
       ui_welcome: 'Hola',
@@ -29,7 +27,11 @@ export class RemoteConfigService {
   }
 
   async init() {
-    await fetchAndActivate(this.rc);
+    try {
+      await fetchAndActivate(this.rc);
+    } catch (error) {
+      console.warn('[RemoteConfig] fetch failed, using defaults', error);
+    }
   }
 
   isBulkActionsEnabled() {

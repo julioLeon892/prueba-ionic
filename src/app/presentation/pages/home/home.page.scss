@@ -5,9 +5,11 @@
   justify-content: space-between;
 }
 
-.task-form {
-  ion-item {
-    margin-bottom: 0.75rem;
+.task-entry {
+  p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--ion-color-medium);
   }
 }
 
@@ -51,3 +53,47 @@
     text-align: right;
   }
 }
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 0.75rem;
+  color: var(--ion-color-medium);
+
+  ion-spinner {
+    --color: var(--ion-color-primary);
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.sync-indicator {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+
+  ion-chip {
+    --background: transparent;
+    font-size: 0.9rem;
+    max-width: 100%;
+
+    ion-label {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+      white-space: normal;
+    }
+
+    .sync-message {
+      margin-top: 0.25rem;
+      font-size: 0.75rem;
+      opacity: 0.8;
+    }
+  }
+}
+

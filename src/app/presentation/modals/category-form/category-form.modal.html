@@ -1,0 +1,71 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ category ? 'Editar categoría' : 'Nueva categoría' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">Cancelar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-list lines="full">
+    <ion-item>
+      <ion-label position="stacked">Nombre</ion-label>
+      <ion-input
+        [(ngModel)]="name"
+        name="name"
+        type="text"
+        maxlength="30"
+        placeholder="Por ejemplo, Trabajo"
+        required
+        autofocus
+      ></ion-input>
+    </ion-item>
+    <ion-item lines="none" class="color-section">
+      <ion-label position="stacked">Color</ion-label>
+      <div class="color-options" role="list">
+        <button
+          type="button"
+          class="color-chip"
+          [class.selected]="colorMode === 'none'"
+          (click)="selectNone()"
+          aria-label="Sin color"
+        >
+          <span class="color-chip__preview none"></span>
+          <span class="color-chip__label">Sin color</span>
+        </button>
+        <button
+          type="button"
+          class="color-chip"
+          *ngFor="let color of palette"
+          [class.selected]="isPresetSelected(color)"
+          (click)="selectPreset(color)"
+          [style.--chip-color]="color"
+          [attr.aria-label]="'Color ' + color"
+        >
+          <span class="color-chip__preview" [style.background]="color"></span>
+          <span class="color-chip__label">{{ color }}</span>
+        </button>
+      </div>
+      <div class="custom-color">
+        <label class="custom-color__label" for="customColorPicker">Personalizado</label>
+        <input
+          id="customColorPicker"
+          type="color"
+          [value]="customColor"
+          (input)="selectCustom($any($event.target).value)"
+        />
+      </div>
+    </ion-item>
+  </ion-list>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button color="primary" (click)="confirm()" [disabled]="!name.trim()">
+        {{ category ? 'Actualizar' : 'Crear' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

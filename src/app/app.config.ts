@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom, APP_INITIALIZER, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, APP_INITIALIZER, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideIonicAngular, IonicRouteStrategy } from '@ionic/angular/standalone';
@@ -7,13 +7,13 @@ import { IonicStorageModule } from '@ionic/storage-angular';
 
 import { TaskRepository } from './core/repositories/task.repository';
 import { CategoryRepository } from './core/repositories/category.repository';
-import { LocalStorageTaskRepository } from './data/local/local-storage-task.repository';
-import { LocalStorageCategoryRepository } from './data/local/local-storage-category.repository';
+import { FirestoreTaskRepository } from './data/firebase/firestore-task.repository';
+import { FirestoreCategoryRepository } from './data/firebase/firestore-category.repository';
 
 import { RemoteConfigService } from './infrastructure/remote-config/remote-config.service';
 
 function initRemoteConfig(rc: RemoteConfigService) {
-  return () => rc.init(); // se espera a que fetchAndActivate termine
+  return () => rc.init();
 }
 
 export const appConfig: ApplicationConfig = {
@@ -23,8 +23,8 @@ export const appConfig: ApplicationConfig = {
     provideIonicAngular(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     importProvidersFrom(IonicStorageModule.forRoot()),
-    { provide: TaskRepository, useClass: LocalStorageTaskRepository },
-    { provide: CategoryRepository, useClass: LocalStorageCategoryRepository },
+    { provide: TaskRepository, useClass: FirestoreTaskRepository },
+    { provide: CategoryRepository, useClass: FirestoreCategoryRepository },
     { provide: APP_INITIALIZER, useFactory: initRemoteConfig, deps: [RemoteConfigService], multi: true },
   ],
 };

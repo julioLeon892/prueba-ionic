@@ -1,0 +1,51 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Nueva tarea</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">Cancelar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-list lines="full">
+    <ion-item>
+      <ion-label position="stacked">Título</ion-label>
+      <ion-input
+        [(ngModel)]="title"
+        name="title"
+        type="text"
+        placeholder="Describe la tarea"
+        required
+        autofocus
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Categoría</ion-label>
+      <ion-select [(ngModel)]="categoryId" name="categoryId" interface="popover">
+        <ion-select-option value="none">Sin categoría</ion-select-option>
+        <ion-select-option *ngFor="let category of categories" [value]="category.id">
+          {{ category.name }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
+
+  <div class="category-preview" *ngIf="previewCategory as category">
+    <ion-chip color="light" [style.--background]="category.color || '#5260ff'">
+      <ion-icon name="bookmark" aria-hidden="true"></ion-icon>
+      <ion-label>{{ category.name }}</ion-label>
+    </ion-chip>
+    <p>Así se verá la tarea con esta categoría.</p>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button color="primary" (click)="confirm()" [disabled]="!title.trim()">
+        Crear tarea
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

@@ -5,7 +5,28 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ng-container *ngIf="vm$ | async as vm">
+  <ng-container *ngIf="vm$ | async as vm; else loading">
+    <div class="sync-indicator" *ngIf="sync$ | async as sync">
+      <ion-chip
+        [color]="sync.state === 'offline' ? 'danger' : sync.state === 'online' ? 'success' : 'medium'"
+        outline="true"
+      >
+        <ion-icon
+          slot="start"
+          [name]="sync.state === 'offline' ? 'cloud-offline-outline' : sync.state === 'online' ? 'cloud-done-outline' : 'cloud-upload-outline'"
+        ></ion-icon>
+        <ion-label>
+          <ng-container [ngSwitch]="sync.state">
+            <span *ngSwitchCase="'connecting'">Conectando con Firebase…</span>
+            <span *ngSwitchCase="'syncing'">Sincronizando cambios…</span>
+            <span *ngSwitchCase="'offline'">Modo offline: usando datos locales</span>
+            <span *ngSwitchDefault>Sincronización en la nube activa</span>
+          </ng-container>
+          <small *ngIf="sync.message" class="sync-message">{{ sync.message }}</small>
+        </ion-label>
+      </ion-chip>
+    </div>
+
     <ion-card class="summary-card">
       <ion-card-header>
         <ion-card-title>Resumen</ion-card-title>
@@ -28,23 +49,18 @@
       </ion-card-content>
     </ion-card>
 
-    <form (submit)="$event.preventDefault(); add()" class="task-form">
-      <ion-item>
-        <ion-input [(ngModel)]="newTitle" name="title" placeholder="Nueva tarea" clear-input="true"></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="stacked">Categoría de la nueva tarea</ion-label>
-        <ion-select [(ngModel)]="newTaskCategory" name="newTaskCategory" interface="popover">
-          <ion-select-option value="none">Sin categoría</ion-select-option>
-          <ion-select-option *ngFor="let c of vm.categories; trackBy: trackCategory" [value]="c.id">
-            {{ c.name }}
-          </ion-select-option>
-        </ion-select>
-      </ion-item>
-
-      <ion-button expand="block" type="submit" [disabled]="!newTitle?.trim()">Agregar</ion-button>
-    </form>
+    <ion-card class="task-entry">
+      <ion-card-header>
+        <ion-card-title>Crear tarea</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Captura los detalles en un modal claro con vista previa de la categoría.</p>
+        <ion-button expand="block" size="large" (click)="openTaskModal(vm.categories)">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Nueva tarea
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
 
     <ion-item lines="none" class="filter-item">
       <ion-label>Filtrar por categoría</ion-label>
@@ -81,8 +97,8 @@
                 <h2 [class.completed]="t.completed">{{ t.title }}</h2>
                 <p class="meta">
                   <ng-container *ngIf="t.category; else noCategory">
-                    <ion-chip size="small" [style.background]="t.category?.color || '#5260ff'" color="light">
-                      <ion-label>{{ t.category?.name }}</ion-label>
+                    <ion-chip size="small" [style.--background]="t.category.color || '#5260ff'" color="light">
+                      <ion-label>{{ t.category.name }}</ion-label>
                     </ion-chip>
                   </ng-container>
                   <ng-template #noCategory>
@@ -118,10 +134,13 @@
         <ion-card-title>Categorías</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-button expand="block" fill="outline" (click)="openCategoryForm()">Crear categoría</ion-button>
+        <ion-button expand="block" fill="outline" (click)="openCategoryForm()">
+          <ion-icon name="bookmark-outline" slot="start"></ion-icon>
+          Crear categoría
+        </ion-button>
         <ion-list *ngIf="vm.categorySummary.length; else emptyCategories">
           <ion-item *ngFor="let summary of vm.categorySummary; trackBy: trackCategorySummary">
-            <ion-chip slot="start" [style.background]="summary.category.color || '#5260ff'" color="light">
+            <ion-chip slot="start" [style.--background]="summary.category.color || '#5260ff'" color="light">
               <ion-label>{{ summary.category.name }}</ion-label>
             </ion-chip>
             <ion-label>
@@ -150,4 +169,11 @@
       </ion-card-content>
     </ion-card>
   </ng-container>
+
+  <ng-template #loading>
+    <div class="loading-state" role="status" aria-live="polite">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Cargando tus tareas desde la nube…</p>
+    </div>
+  </ng-template>
 </ion-content>

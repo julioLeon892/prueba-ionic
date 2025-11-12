@@ -1,0 +1,23 @@
+.category-preview {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+
+  ion-chip {
+    --color: #fff;
+    --background: var(--ion-color-primary);
+    font-weight: 600;
+
+    ion-icon {
+      margin-right: 0.25rem;
+    }
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-medium-shade);
+    font-size: 0.85rem;
+  }
+}
