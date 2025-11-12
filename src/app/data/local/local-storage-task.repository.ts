@@ -27,7 +27,15 @@ export class LocalStorageTaskRepository implements TaskRepository {
 
   async create(title: string, categoryId?: string) {
     const now = Date.now();
-    const newTask: Task = { id: uuid(), title, completed: false, categoryId, createdAt: now, updatedAt: now };
+    const normalizedCategory = categoryId?.trim() ? categoryId : undefined;
+    const newTask: Task = {
+      id: uuid(),
+      title,
+      completed: false,
+      categoryId: normalizedCategory,
+      createdAt: now,
+      updatedAt: now,
+    };
     await this.persist([newTask, ...this._tasks$.value]);
   }
 
@@ -41,7 +49,27 @@ export class LocalStorageTaskRepository implements TaskRepository {
   }
 
   async setCategory(id: string, categoryId?: string) {
-    const tasks = this._tasks$.value.map(t => t.id === id ? { ...t, categoryId, updatedAt: Date.now() } : t);
+    const normalizedCategory = categoryId?.trim() ? categoryId : undefined;
+    const tasks = this._tasks$.value.map(t => t.id === id ? { ...t, categoryId: normalizedCategory, updatedAt: Date.now() } : t);
+    await this.persist(tasks);
+  }
+
+  async setAllCompleted(completed: boolean) {
+    const now = Date.now();
+    const tasks = this._tasks$.value.map(t =>
+      t.completed === completed ? t : { ...t, completed, updatedAt: now }
+    );
+    await this.persist(tasks);
+  }
+
+  async removeCompleted() {
+    await this.persist(this._tasks$.value.filter(t => !t.completed));
+  }
+
+  async clearCategoryAssignments(categoryId: string) {
+    const tasks = this._tasks$.value.map(t =>
+      t.categoryId === categoryId ? { ...t, categoryId: undefined, updatedAt: Date.now() } : t
+    );
     await this.persist(tasks);
   }
 }

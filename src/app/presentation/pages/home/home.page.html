@@ -4,45 +4,250 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <form (submit)="$event.preventDefault(); add()">
-    <ion-item>
-     <ion-input [(ngModel)]="newTitle" name="title" placeholder="Nueva tarea" clear-input="true"></ion-input>
+<ion-content class="ion-padding home-content" [fullscreen]="true">
+  <ng-container *ngIf="vm$ | async as vm">
+    <ion-card class="hero-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="sparkles-outline"></ion-icon>
+          Organiza tu día
+        </ion-card-title>
+        <ion-card-subtitle>Visualiza tu progreso y mantén tus pendientes bajo control</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="hero-description">
+          {{ vm.stats.completed }} de {{ vm.stats.total }} tareas completadas.
+        </p>
+        <ion-progress-bar
+          class="hero-progress"
+          color="success"
+          [value]="vm.stats.total ? vm.stats.completed / vm.stats.total : 0"
+        ></ion-progress-bar>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <ion-icon name="list-outline"></ion-icon>
+            <div>
+              <span>Total</span>
+              <strong>{{ vm.stats.total }}</strong>
+            </div>
+          </div>
+          <div class="summary-item">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            <div>
+              <span>Completadas</span>
+              <strong>{{ vm.stats.completed }}</strong>
+            </div>
+          </div>
+          <div class="summary-item">
+            <ion-icon name="time-outline"></ion-icon>
+            <div>
+              <span>Pendientes</span>
+              <strong>{{ vm.stats.pending }}</strong>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
 
-    </ion-item>
+    <form (submit)="$event.preventDefault(); add()" class="task-form">
+      <ion-card class="add-card">
+        <ion-card-header>
+          <ion-card-title>Nueva tarea</ion-card-title>
+          <ion-card-subtitle>Crea un pendiente y asígnalo sin salir de esta vista</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item lines="none" class="task-input">
+            <ion-icon name="create-outline" slot="start"></ion-icon>
+            <ion-input
+              [(ngModel)]="newTitle"
+              name="title"
+              placeholder="¿Qué necesitas hacer?"
+              clear-input="true"
+            ></ion-input>
+          </ion-item>
 
-    <ion-item>
-      <ion-select [(ngModel)]="selectedCat" name="category" (ngModelChange)="onCatChange($event)">
-        <ion-select-option value="all">Todas las categorías</ion-select-option>
-        <ion-select-option *ngFor="let c of (categories$ | async); trackBy: trackById" [value]="c.id">
+          <ion-item lines="none" class="task-input">
+            <ion-icon name="folder-open-outline" slot="start"></ion-icon>
+            <ion-select
+              [(ngModel)]="newTaskCategory"
+              name="newTaskCategory"
+              interface="popover"
+              placeholder="Selecciona una categoría"
+            >
+              <ion-select-option value="none">Sin categoría</ion-select-option>
+              <ion-select-option *ngFor="let c of vm.categories; trackBy: trackCategory" [value]="c.id">
+                {{ c.name }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-note color="medium" class="helper-note">
+            Consejo: crea tus categorías abajo para agrupar tus tareas rápidamente.
+          </ion-note>
+
+          <ion-button expand="block" type="submit" [disabled]="!newTitle?.trim()">Agregar tarea</ion-button>
+        </ion-card-content>
+      </ion-card>
+    </form>
+
+    <section class="filter-section">
+      <div class="filter-header">
+        <h2>Filtrar tareas</h2>
+        <ion-note color="medium">Explora solo lo que necesitas con un toque.</ion-note>
+      </div>
+      <div class="filter-chips">
+        <ion-chip
+          role="button"
+          (click)="selectFilter('all')"
+          [outline]="!isFilterActive('all')"
+          [class.active]="isFilterActive('all')"
+          color="primary"
+        >
+          Todas
+        </ion-chip>
+        <ion-chip
+          role="button"
+          (click)="selectFilter('none')"
+          [outline]="!isFilterActive('none')"
+          [class.active]="isFilterActive('none')"
+          color="tertiary"
+        >
+          Sin categoría
+        </ion-chip>
+        <ion-chip
+          role="button"
+          *ngFor="let c of vm.categories; trackBy: trackCategory"
+          (click)="selectFilter(c.id)"
+          [outline]="!isFilterActive(c.id)"
+          [class.active]="isFilterActive(c.id)"
+          [style.--chip-color]="c.color || '#5260ff'"
+          color="light"
+        >
+          <ion-icon name="pricetag-outline"></ion-icon>
           {{ c.name }}
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
+        </ion-chip>
+      </div>
+    </section>
 
+    <ion-card *ngIf="bulkEnabled" class="bulk-card ion-margin-bottom">
+      <ion-card-header>
+        <ion-card-title>{{ welcome }}</ion-card-title>
+        <ion-card-subtitle>Acciones masivas para ahorrar tiempo</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content class="bulk-actions">
+        <ion-button size="default" fill="outline" (click)="setAll(true)">
+          <ion-icon slot="start" name="checkbox-outline"></ion-icon>
+          Completar todas
+        </ion-button>
+        <ion-button size="default" fill="outline" (click)="setAll(false)">
+          <ion-icon slot="start" name="refresh-outline"></ion-icon>
+          Marcar pendientes
+        </ion-button>
+        <ion-button size="default" fill="clear" color="danger" (click)="clearCompleted()">
+          <ion-icon slot="start" name="trash-outline"></ion-icon>
+          Eliminar completadas
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
 
-    <ion-button expand="block" type="submit" [disabled]="!newTitle?.trim()">Agregar</ion-button>
+    <ion-card class="tasks-card">
+      <ion-card-header>
+        <ion-card-title>Tareas</ion-card-title>
+        <ion-card-subtitle>Mantén tus pendientes al día</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ng-container *ngIf="vm.tasks.length; else emptyTasks">
+          <ion-list lines="none">
+            <ion-item *ngFor="let t of vm.tasks; trackBy: trackTask" class="task-item">
+              <ion-checkbox slot="start" [checked]="t.completed" (ionChange)="toggle(t.id)"></ion-checkbox>
+              <ion-label>
+                <h3 [class.completed]="t.completed">{{ t.title }}</h3>
+                <div class="meta">
+                  <ng-container *ngIf="t.category; else noCategory">
+                    <ion-chip class="category-chip" [style.background]="t.category?.color || '#5260ff'" color="light">
+                      <ion-icon name="folder-outline"></ion-icon>
+                      <ion-label>{{ t.category?.name }}</ion-label>
+                    </ion-chip>
+                  </ng-container>
+                  <ng-template #noCategory>
+                    <ion-text color="medium">Sin categoría</ion-text>
+                  </ng-template>
+                </div>
+              </ion-label>
+              <div class="task-actions" slot="end">
+                <ion-select
+                  interface="popover"
+                  [value]="t.categoryId ?? 'none'"
+                  (ionChange)="assignCategory(t.id, $event.detail.value)"
+                >
+                  <ion-select-option value="none">Sin categoría</ion-select-option>
+                  <ion-select-option *ngFor="let c of vm.categories; trackBy: trackCategory" [value]="c.id">
+                    {{ c.name }}
+                  </ion-select-option>
+                </ion-select>
+                <ion-button fill="clear" color="danger" (click)="remove(t.id)">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-item>
+          </ion-list>
+        </ng-container>
+        <ng-template #emptyTasks>
+          <div class="empty-state">
+            <ion-icon name="clipboard-outline"></ion-icon>
+            <h3>No hay tareas todavía</h3>
+            <p>Crea una nueva tarea o cambia el filtro para ver más resultados.</p>
+          </div>
+        </ng-template>
+      </ion-card-content>
+    </ion-card>
 
-  </form>
+    <ion-card class="categories-card">
+      <ion-card-header>
+        <ion-card-title>Categorías</ion-card-title>
+        <ion-card-subtitle>Personaliza cómo organizas tus tareas</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-button expand="block" fill="outline" (click)="openCategoryForm()">
+          <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+          Crear categoría
+        </ion-button>
 
-  <ion-list>
-    <ion-item *ngFor="let t of (tasks$ | async); trackBy: trackById">
-      <ion-checkbox slot="start" [checked]="t.completed" (ionChange)="toggle(t.id)"></ion-checkbox>
-      <ion-label>
-        <h2 [class.completed]="t.completed">{{ t.title }}</h2>
-      </ion-label>
-      <ion-button fill="clear" color="danger" (click)="remove(t.id)" slot="end">Eliminar</ion-button>
-    </ion-item>
-  </ion-list>
+        <ion-list *ngIf="vm.categorySummary.length; else emptyCategories" lines="none" class="category-list">
+          <ion-item *ngFor="let summary of vm.categorySummary; trackBy: trackCategorySummary" class="category-item">
+            <ion-chip slot="start" [style.background]="summary.category.color || '#5260ff'" color="light">
+              <ion-icon name="pricetag-outline"></ion-icon>
+              <ion-label>{{ summary.category.name }}</ion-label>
+            </ion-chip>
+            <ion-label>
+              <p><strong>{{ summary.total }}</strong> tareas</p>
+              <p><strong>{{ summary.completed }}</strong> completadas</p>
+            </ion-label>
+            <ion-button fill="clear" slot="end" color="medium" (click)="openCategoryForm(summary.category)">
+              <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" slot="end" color="danger" (click)="confirmDeleteCategory(summary.category)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+        <ng-template #emptyCategories>
+          <div class="empty-state">
+            <ion-icon name="albums-outline"></ion-icon>
+            <h3>Sin categorías aún</h3>
+            <p>Crea tu primera categoría para agrupar tareas relacionadas.</p>
+          </div>
+        </ng-template>
 
-  <ion-card *ngIf="bulkEnabled" class="ion-margin-bottom">
-  <ion-card-header>
-    <ion-card-title>{{ welcome }}</ion-card-title>
-  </ion-card-header>
-  <ion-card-content>
-    Acciones en lote habilitadas por feature flag.
-    <!-- Aquí podrías agregar: Completar todas / Limpiar completadas -->
-  </ion-card-content>
-</ion-card>
-
+        <ion-item-divider></ion-item-divider>
+        <div class="uncategorized-summary">
+          <ion-chip color="medium" outline="true">Sin categoría</ion-chip>
+          <ion-text>
+            <p>Total: {{ vm.uncategorized.total }}</p>
+            <p>Completadas: {{ vm.uncategorized.completed }}</p>
+          </ion-text>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
 </ion-content>

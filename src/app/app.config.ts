@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom, APP_INITIALIZER } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, APP_INITIALIZER, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideIonicAngular, IonicRouteStrategy } from '@ionic/angular/standalone';
@@ -18,6 +18,7 @@ function initRemoteConfig(rc: RemoteConfigService) {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZoneChangeDetection({ eventCoalescing: true, runCoalescing: true }),
     provideRouter(routes),
     provideIonicAngular(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
