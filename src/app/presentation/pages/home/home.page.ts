@@ -10,7 +10,7 @@ import {
   IonButton, IonList, IonLabel, IonCheckbox,
   IonCard, IonCardHeader, IonCardTitle, IonCardContent,
   IonBadge, IonChip, IonText, IonItemDivider,
-  IonIcon
+  IonIcon, IonSpinner
 } from '@ionic/angular/standalone';
 
 import { combineLatest } from 'rxjs';
@@ -42,7 +42,7 @@ import { CategorySummary } from '../../../core/models/category-summary';
     IonButton, IonList, IonLabel, IonCheckbox,
     IonCard, IonCardHeader, IonCardTitle, IonCardContent,
     IonBadge, IonChip, IonText, IonItemDivider,
-    IonIcon
+    IonIcon, IonSpinner
   ]
 })
 export class HomePage {
