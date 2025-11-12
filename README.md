@@ -100,6 +100,7 @@ Los tests cubren el `TodoStore` (filtrado, estadísticas y resúmenes) y los nue
    firebase deploy --only firestore:rules
    ```
    Si prefieres el modo "test" desde la consola recuerda que expira a los 30 días; con estas reglas la app puede funcionar indefinidamente sin abrir la base de datos a datos inválidos.
+   > ¿Necesitas reglas adicionales (por ejemplo, `posts` o perfiles)? Añádelas en el mismo archivo sin eliminar los bloques `tasks` y `categories`, tal como se muestra en el repositorio, para que la app conserve permisos sobre sus colecciones.
 5. Las colecciones `tasks` y `categories` se crean automáticamente al usar la aplicación; no hace falta preconfigurarlas.
 6. Si la app no puede conectarse, activará el modo offline: verás un chip indicando que los cambios quedan en caché y se reintentará cuando la conexión vuelva.
 

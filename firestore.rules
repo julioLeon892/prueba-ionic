@@ -1,6 +1,20 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // --- Blog-style collections (user provided example) ---
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                     && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if request.auth != null
+                             && resource.data.authorId == request.auth.uid;
+    }
+
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // --- Application collections (tasks & categories) ---
     function isNonEmptyString(value, maxLength) {
       return value is string && value.size() > 0 && value.size() <= maxLength;
     }
@@ -37,6 +51,11 @@ service cloud.firestore {
       allow create: if isValidTask(request.resource.data);
       allow update: if isValidTask(request.resource.data);
       allow delete: if true;
+    }
+
+    // Block everything else explicitly so the intent is clear.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
