@@ -9,7 +9,7 @@ import {
   IonItem, IonSelect, IonSelectOption,
   IonButton, IonList, IonLabel, IonCheckbox,
   IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-  IonBadge, IonChip, IonText, IonItemDivider,
+  IonBadge, IonChip, IonText,
   IonIcon, IonSpinner
 } from '@ionic/angular/standalone';
 
@@ -45,7 +45,7 @@ import { FirebaseError } from 'firebase/app';
     IonItem, IonSelect, IonSelectOption,
     IonButton, IonList, IonLabel, IonCheckbox,
     IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-    IonBadge, IonChip, IonText, IonItemDivider,
+    IonBadge, IonChip, IonText,
     IonIcon, IonSpinner
   ]
 })

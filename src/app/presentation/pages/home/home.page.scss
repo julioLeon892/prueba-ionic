@@ -15,8 +15,16 @@
 
 
 .cta-button {
-  --border-radius: 18px;
+  --border-radius: 20px;
+  --background: var(--ion-color-primary);
+  --background-focused: var(--ion-color-primary);
+  --background-activated: var(--ion-color-primary-shade, var(--ion-color-primary));
+  --ripple-color: rgba(255, 255, 255, 0.3);
   font-weight: 600;
+  color: var(--ion-color-primary-contrast, #ffffff);
+  --color: var(--ion-color-primary-contrast, #ffffff);
+  --color-focused: var(--ion-color-primary-contrast, #ffffff);
+  --color-activated: var(--ion-color-primary-contrast, #ffffff);
 }
 
 .filter-card {
@@ -26,23 +34,26 @@
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
   }
-}
 
-.filter-item {
-  --background: transparent;
-  --border-radius: 12px;
-  --inner-padding-start: 0;
-  --inner-padding-end: 0;
-  --padding-start: 0;
-  --padding-end: 0;
+  .filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: space-between;
+    width: 100%;
+  }
 
-  ion-label {
+  .filter-label {
     font-weight: 600;
   }
 
-  ion-select {
-    min-width: 8rem;
-    text-align: end;
+  .filter-select {
+    flex: 1 1 12rem;
+    min-width: 0;
+    width: min(16rem, 100%);
+    text-align: left;
+    margin-left: auto;
   }
 }
 
@@ -86,6 +97,8 @@
   align-items: center;
   justify-content: space-between;
   margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ion-color-step-150, rgba(255, 255, 255, 0.08));
 
   ion-text {
     text-align: right;

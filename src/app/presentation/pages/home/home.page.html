@@ -64,9 +64,11 @@
 
     <ion-card class="filter-card">
       <ion-card-content>
-        <ion-item lines="none" class="filter-item">
-          <ion-label>Filtrar por categoría</ion-label>
+        <div class="filter-controls">
+          <span class="filter-label">Filtrar por categoría</span>
           <ion-select
+            class="filter-select"
+            aria-label="Filtrar por categoría"
             [(ngModel)]="selectedCat"
             name="filterCategory"
             (ngModelChange)="onCatChange($event)"
@@ -78,7 +80,7 @@
               {{ c.name }}
             </ion-select-option>
           </ion-select>
-        </ion-item>
+        </div>
       </ion-card-content>
     </ion-card>
 
@@ -177,7 +179,6 @@
         <ng-template #emptyCategories>
           <p class="empty">Crea tu primera categoría para organizar las tareas.</p>
         </ng-template>
-        <ion-item-divider></ion-item-divider>
         <div class="uncategorized-summary">
           <ion-chip color="medium" outline="true">Sin categoría</ion-chip>
           <ion-text>
