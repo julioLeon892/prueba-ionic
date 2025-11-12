@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>To-Do (prueba)</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form (submit)="$event.preventDefault(); add()">
+    <ion-item>
+     <ion-input [(ngModel)]="newTitle" name="title" placeholder="Nueva tarea" clear-input="true"></ion-input>
+
+    </ion-item>
+
+    <ion-item>
+      <ion-select [(ngModel)]="selectedCat" name="category" (ngModelChange)="onCatChange($event)">
+        <ion-select-option value="all">Todas las categorías</ion-select-option>
+        <ion-select-option *ngFor="let c of (categories$ | async); trackBy: trackById" [value]="c.id">
+          {{ c.name }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+
+    <ion-button expand="block" type="submit" [disabled]="!newTitle?.trim()">Agregar</ion-button>
+
+  </form>
+
+  <ion-list>
+    <ion-item *ngFor="let t of (tasks$ | async); trackBy: trackById">
+      <ion-checkbox slot="start" [checked]="t.completed" (ionChange)="toggle(t.id)"></ion-checkbox>
+      <ion-label>
+        <h2 [class.completed]="t.completed">{{ t.title }}</h2>
+      </ion-label>
+      <ion-button fill="clear" color="danger" (click)="remove(t.id)" slot="end">Eliminar</ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ion-card *ngIf="bulkEnabled" class="ion-margin-bottom">
+  <ion-card-header>
+    <ion-card-title>{{ welcome }}</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    Acciones en lote habilitadas por feature flag.
+    <!-- Aquí podrías agregar: Completar todas / Limpiar completadas -->
+  </ion-card-content>
+</ion-card>
+
+</ion-content>

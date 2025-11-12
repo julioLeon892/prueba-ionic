@@ -1,0 +1,10 @@
+
+export const firebaseConfig = {
+  projectId: 'prueba-jcleon',
+  appId: '1:735737939579:web:5e12b3c22ed7e8fed444de',
+  storageBucket: 'prueba-jcleon.firebasestorage.app',
+  apiKey: 'AIzaSyDWj9ZF7_1lx_MmUHfVx4nMJs5NaNpvAPI',
+  authDomain: 'prueba-jcleon.firebaseapp.com',
+  messagingSenderId: '735737939579',
+  measurementId: 'G-M9KLHHBRE8'
+};

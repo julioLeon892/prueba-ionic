@@ -1,0 +1,9 @@
+
+{
+  "parameters": {
+    "feature_enableBulkActions": { "defaultValue": { "value": "false" } },
+    "ui_welcome": { "defaultValue": { "value": "Hola" } }
+  },
+  "parameterGroups": {}
+}
+
