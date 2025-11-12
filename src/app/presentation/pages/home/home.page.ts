@@ -193,10 +193,13 @@ export class HomePage {
   categoryChipStyle(color?: string | null): Record<string, string> {
     const { background, foreground } = this.resolveChipColors(color);
     return {
+      background,
+      color: foreground,
       '--background': background,
       '--color': foreground,
       '--color-activated': foreground,
       '--color-focused': foreground,
+      '--border-color': background,
     };
   }
 
