@@ -4,7 +4,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ion-padding has-quick-actions">
   <ng-container *ngIf="vm$ | async as vm; else loading">
     <div class="sync-indicator" *ngIf="sync$ | async as sync">
       <ion-chip
@@ -168,16 +168,6 @@
         </div>
       </ion-card-content>
     </ion-card>
-    <ion-fab class="action-fab" slot="fixed" horizontal="end" vertical="bottom">
-      <ion-fab-button color="primary" (click)="openTaskModal(vm.categories)" aria-label="Crear nueva tarea">
-        <ion-icon name="add"></ion-icon>
-      </ion-fab-button>
-      <ion-fab-list side="top">
-        <ion-fab-button color="tertiary" (click)="openCategoryForm()" aria-label="Crear nueva categoría">
-          <ion-icon name="bookmark-outline"></ion-icon>
-        </ion-fab-button>
-      </ion-fab-list>
-    </ion-fab>
   </ng-container>
 
   <ng-template #loading>
@@ -187,3 +177,29 @@
     </div>
   </ng-template>
 </ion-content>
+
+<ion-footer class="quick-actions" *ngIf="vm$ | async as vm">
+  <ion-toolbar>
+    <div class="quick-actions__buttons">
+      <ion-button
+        fill="clear"
+        color="tertiary"
+        size="large"
+        (click)="openCategoryForm()"
+        aria-label="Crear nueva categoría"
+      >
+        <ion-icon slot="start" name="bookmark-outline"></ion-icon>
+        <ion-label>Categoría</ion-label>
+      </ion-button>
+      <ion-button
+        color="primary"
+        size="large"
+        (click)="openTaskModal(vm.categories)"
+        aria-label="Crear nueva tarea"
+      >
+        <ion-icon slot="start" name="add-circle"></ion-icon>
+        <ion-label>Tarea</ion-label>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

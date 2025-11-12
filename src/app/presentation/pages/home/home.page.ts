@@ -5,12 +5,12 @@ import { AlertController, ModalController, ToastController } from '@ionic/angula
 
 // Componentes standalone de Ionic usados en el HTML
 import {
-  IonHeader, IonToolbar, IonTitle, IonContent,
+  IonHeader, IonToolbar, IonTitle, IonContent, IonFooter,
   IonItem, IonSelect, IonSelectOption,
   IonButton, IonList, IonLabel, IonCheckbox,
   IonCard, IonCardHeader, IonCardTitle, IonCardContent,
   IonBadge, IonChip, IonText, IonItemDivider,
-  IonIcon, IonSpinner, IonFab, IonFabButton, IonFabList
+  IonIcon, IonSpinner
 } from '@ionic/angular/standalone';
 
 import { combineLatest } from 'rxjs';
@@ -41,12 +41,12 @@ import { FirebaseError } from 'firebase/app';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule, FormsModule,
-    IonHeader, IonToolbar, IonTitle, IonContent,
+    IonHeader, IonToolbar, IonTitle, IonContent, IonFooter,
     IonItem, IonSelect, IonSelectOption,
     IonButton, IonList, IonLabel, IonCheckbox,
     IonCard, IonCardHeader, IonCardTitle, IonCardContent,
     IonBadge, IonChip, IonText, IonItemDivider,
-    IonIcon, IonSpinner, IonFab, IonFabButton, IonFabList
+    IonIcon, IonSpinner
   ]
 })
 export class HomePage {
