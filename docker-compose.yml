@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  ionic-app:
+    build: .
+    command: npm run start -- --host 0.0.0.0 --port 4200
+    ports:
+      - "4200:4200"
+    environment:
+      NG_CLI_ANALYTICS: 'false'
+      CHOKIDAR_USEPOLLING: 'true'
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    tty: true
+    restart: unless-stopped
