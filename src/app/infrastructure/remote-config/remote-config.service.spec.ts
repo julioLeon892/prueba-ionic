@@ -3,6 +3,7 @@ import { RemoteConfigService } from './remote-config.service';
 import { IonicStorageService } from '../storage/ionic-storage.service';
 import * as firebaseApp from 'firebase/app';
 import * as firebaseRemoteConfig from 'firebase/remote-config';
+import * as firebaseFirestore from 'firebase/firestore';
 
 class IonicStorageStub {
   store: Record<string, unknown> = {};
@@ -25,6 +26,8 @@ describe('RemoteConfigService', () => {
   let fetchSpy: jasmine.Spy;
   let booleanSpy: jasmine.Spy;
   let stringSpy: jasmine.Spy;
+  let setDocSpy: jasmine.Spy;
+  let docSpy: jasmine.Spy;
 
   beforeEach(() => {
     storage = new IonicStorageStub();
@@ -35,6 +38,9 @@ describe('RemoteConfigService', () => {
     fetchSpy = spyOn(firebaseRemoteConfig, 'fetchAndActivate');
     booleanSpy = spyOn(firebaseRemoteConfig, 'getBoolean');
     stringSpy = spyOn(firebaseRemoteConfig, 'getString');
+    spyOn(firebaseFirestore, 'getFirestore').and.returnValue({} as firebaseFirestore.Firestore);
+    docSpy = spyOn(firebaseFirestore, 'doc').and.returnValue({} as firebaseFirestore.DocumentReference);
+    setDocSpy = spyOn(firebaseFirestore, 'setDoc').and.returnValue(Promise.resolve());
 
     TestBed.configureTestingModule({
       providers: [
@@ -61,6 +67,11 @@ describe('RemoteConfigService', () => {
         welcome: 'Hola Remote Config',
       })
     );
+    expect(docSpy).toHaveBeenCalledWith(jasmine.any(Object), 'remoteConfigSnapshots', 'latest');
+    expect(setDocSpy).toHaveBeenCalledWith(jasmine.any(Object), jasmine.objectContaining({
+      featureEnableBulkActions: true,
+      welcome: 'Hola Remote Config',
+    }));
   });
 
   it('falls back to cached values when the remote config call fails', async () => {
@@ -78,5 +89,6 @@ describe('RemoteConfigService', () => {
 
     expect(service.isBulkActionsEnabled()).toBeTrue();
     expect(service.getWelcomeMessage()).toBe('Mensaje cacheado');
+    expect(setDocSpy).not.toHaveBeenCalled();
   });
 });

@@ -7,6 +7,7 @@ import {
   getString,
   RemoteConfig,
 } from 'firebase/remote-config';
+import { Firestore, doc, getFirestore, setDoc } from 'firebase/firestore';
 import { firebaseConfig } from '../../firebase.config';
 import { IonicStorageService } from '../storage/ionic-storage.service';
 
@@ -26,6 +27,7 @@ const DEFAULT_SNAPSHOT: RemoteConfigSnapshot = {
 export class RemoteConfigService {
   private app = initializeApp(firebaseConfig);
   private rc: RemoteConfig = getRemoteConfig(this.app);
+  private firestore: Firestore = getFirestore(this.app);
   private snapshot: RemoteConfigSnapshot = { ...DEFAULT_SNAPSHOT };
   private restored = false;
 
@@ -87,6 +89,21 @@ export class RemoteConfigService {
     };
 
     this.snapshot = latest;
-    await this.storage.set(RC_CACHE_KEY, latest);
+    await this.persistSnapshot(latest);
+  }
+
+  private async persistSnapshot(snapshot: RemoteConfigSnapshot) {
+    await this.storage.set(RC_CACHE_KEY, snapshot);
+
+    try {
+      const latestDoc = doc(this.firestore, 'remoteConfigSnapshots', 'latest');
+      await setDoc(latestDoc, {
+        ...snapshot,
+        storedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('[RemoteConfig] failed to persist snapshot in Firestore', err);
+    }
   }
 }

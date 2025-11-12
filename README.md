@@ -89,6 +89,7 @@ Los tests cubren el `TodoStore` (filtrado, estadísticas y resúmenes) y los nue
    - `ui_welcome`: mensaje mostrado cuando el flag está activo.
 4. **Demo**: al activar `feature_enableBulkActions = true`, aparecerá en la UI la tarjeta con botones para completar/reabrir todas las tareas y limpiar completadas.
 5. **Persistencia de flags**: la app cachea el último estado de Remote Config en almacenamiento local para mantener los flags disponibles incluso si la siguiente sincronización falla o no hay conectividad.
+6. **Verificación en Firebase**: cada sincronización exitosa replica el snapshot en Cloud Firestore (`remoteConfigSnapshots/latest`). Ingresa a la consola de Firebase → Firestore Database para visualizar los valores almacenados (`featureEnableBulkActions`, `welcome`, `fetchedAt`, `storedAt`).
 
 ## ♻️ Infrastructure as Code
 - `Dockerfile` + `docker-compose.yml`: reproducen la infraestructura local/CI.
