@@ -11,7 +11,8 @@ import { DeleteCategoryUseCase } from '../../../domain/usecases/delete-category.
 import { CompleteAllTasksUseCase } from '../../../domain/usecases/complete-all-tasks.usecase';
 import { ClearCompletedTasksUseCase } from '../../../domain/usecases/clear-completed-tasks.usecase';
 import { RemoteConfigService } from '../../../infrastructure/remote-config/remote-config.service';
-import { AlertController } from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular';
+import { CloudSyncService } from '../../../infrastructure/firebase/cloud-sync.service';
 import { Category } from '../../../core/models/category';
 
 describe('HomePage', () => {
@@ -28,7 +29,9 @@ describe('HomePage', () => {
   let clearCompleted: jasmine.SpyObj<ClearCompletedTasksUseCase>;
   let remoteConfig: jasmine.SpyObj<RemoteConfigService>;
   let alertCtrl: jasmine.SpyObj<AlertController>;
+  let toastCtrl: jasmine.SpyObj<ToastController>;
   let latestAlertOptions: any;
+  let cloudSync: jasmine.SpyObj<CloudSyncService>;
 
   beforeEach(() => {
     store = {
@@ -61,6 +64,12 @@ describe('HomePage', () => {
       return { present: presentSpy } as any;
     });
 
+    toastCtrl = jasmine.createSpyObj<ToastController>('ToastController', ['create']);
+    toastCtrl.create.and.resolveTo({ present: presentSpy } as any);
+
+    cloudSync = jasmine.createSpyObj<CloudSyncService>('CloudSyncService', ['update', 'state$']);
+    cloudSync.state$.and.returnValue(of({ state: 'online' }));
+
     component = new HomePage(
       store,
       addTask,
@@ -74,6 +83,8 @@ describe('HomePage', () => {
       clearCompleted,
       remoteConfig,
       alertCtrl,
+      toastCtrl,
+      cloudSync,
     );
   });
 
