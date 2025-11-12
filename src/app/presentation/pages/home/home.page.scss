@@ -5,9 +5,11 @@
   justify-content: space-between;
 }
 
-.task-form {
-  ion-item {
-    margin-bottom: 0.75rem;
+.task-entry {
+  p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--ion-color-medium);
   }
 }
 

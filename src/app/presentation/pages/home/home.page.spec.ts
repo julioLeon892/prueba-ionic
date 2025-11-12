@@ -11,7 +11,7 @@ import { DeleteCategoryUseCase } from '../../../domain/usecases/delete-category.
 import { CompleteAllTasksUseCase } from '../../../domain/usecases/complete-all-tasks.usecase';
 import { ClearCompletedTasksUseCase } from '../../../domain/usecases/clear-completed-tasks.usecase';
 import { RemoteConfigService } from '../../../infrastructure/remote-config/remote-config.service';
-import { AlertController, ToastController } from '@ionic/angular';
+import { AlertController, ModalController, ToastController } from '@ionic/angular';
 import { CloudSyncService } from '../../../infrastructure/firebase/cloud-sync.service';
 import { Category } from '../../../core/models/category';
 
@@ -32,6 +32,9 @@ describe('HomePage', () => {
   let toastCtrl: jasmine.SpyObj<ToastController>;
   let latestAlertOptions: any;
   let cloudSync: jasmine.SpyObj<CloudSyncService>;
+  let modalCtrl: jasmine.SpyObj<ModalController>;
+  let modalDismissResponse: { data: any; role: string };
+  let latestModalOptions: any;
 
   beforeEach(() => {
     store = {
@@ -70,6 +73,18 @@ describe('HomePage', () => {
     cloudSync = jasmine.createSpyObj<CloudSyncService>('CloudSyncService', ['update', 'state$']);
     cloudSync.state$.and.returnValue(of({ state: 'online' }));
 
+    modalDismissResponse = { data: null, role: 'cancel' };
+    modalCtrl = jasmine.createSpyObj<ModalController>('ModalController', ['create']);
+    modalCtrl.create.and.callFake(async (options) => {
+      latestModalOptions = options;
+      return {
+        present: presentSpy,
+        onWillDismiss: jasmine
+          .createSpy('onWillDismiss')
+          .and.resolveTo(modalDismissResponse),
+      } as any;
+    });
+
     component = new HomePage(
       store,
       addTask,
@@ -83,6 +98,7 @@ describe('HomePage', () => {
       clearCompleted,
       remoteConfig,
       alertCtrl,
+      modalCtrl,
       toastCtrl,
       cloudSync,
     );
@@ -94,21 +110,22 @@ describe('HomePage', () => {
     expect(component.welcome).toBe('Hola remoto');
   });
 
-  it('should add a task and reset local state', async () => {
+  it('should create a modal for a new task and persist on confirm', async () => {
     addTask.execute.and.resolveTo();
-    component.newTitle = 'Nueva tarea';
-    component.newTaskCategory = 'cat-1';
+    modalDismissResponse = { data: { title: 'Nueva tarea', categoryId: 'cat-1' }, role: 'confirm' };
 
-    await component.add();
+    await component.openTaskModal([{ id: 'cat-1', name: 'Trabajo', color: '#f00' }]);
 
+    expect(modalCtrl.create).toHaveBeenCalled();
+    expect(latestModalOptions.component).toBeDefined();
     expect(addTask.execute).toHaveBeenCalledWith('Nueva tarea', 'cat-1');
-    expect(component.newTitle).toBe('');
-    expect(component.newTaskCategory).toBe('none');
   });
 
-  it('should ignore empty titles', async () => {
-    component.newTitle = '  ';
-    await component.add();
+  it('should skip task creation when modal is cancelled', async () => {
+    modalDismissResponse = { data: null, role: 'cancel' };
+
+    await component.openTaskModal([]);
+
     expect(addTask.execute).not.toHaveBeenCalled();
   });
 
@@ -135,21 +152,23 @@ describe('HomePage', () => {
     expect(clearCompleted.execute).toHaveBeenCalled();
   });
 
-  it('should open create category dialog and call use case', async () => {
+  it('should open create category modal and call use case on confirm', async () => {
     createCategory.execute.and.resolveTo();
+    modalDismissResponse = { data: { name: 'Trabajo', color: '#123456' }, role: 'confirm' };
+
     await component.openCategoryForm();
-    expect(alertCtrl.create).toHaveBeenCalled();
-    const handler = latestAlertOptions.buttons[1].handler as (data: any) => boolean;
-    handler({ name: 'Trabajo', color: '#123456' });
+
+    expect(modalCtrl.create).toHaveBeenCalled();
     expect(createCategory.execute).toHaveBeenCalledWith('Trabajo', '#123456');
   });
 
-  it('should open edit category dialog and call update', async () => {
+  it('should open edit category modal and call update on confirm', async () => {
     updateCategory.execute.and.resolveTo();
     const category: Category = { id: '1', name: 'Original', color: '#ffffff' };
+    modalDismissResponse = { data: { name: 'Actualizada', color: '#abcdef' }, role: 'confirm' };
+
     await component.openCategoryForm(category);
-    const handler = latestAlertOptions.buttons[1].handler as (data: any) => boolean;
-    handler({ name: 'Actualizada', color: '#abcdef' });
+
     expect(updateCategory.execute).toHaveBeenCalledWith('1', 'Actualizada', '#abcdef');
   });
 

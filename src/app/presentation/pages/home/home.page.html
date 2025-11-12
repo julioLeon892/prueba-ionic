@@ -49,23 +49,17 @@
       </ion-card-content>
     </ion-card>
 
-    <form (submit)="$event.preventDefault(); add()" class="task-form">
-      <ion-item>
-        <ion-input [(ngModel)]="newTitle" name="title" placeholder="Nueva tarea" clear-input="true"></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="stacked">Categoría de la nueva tarea</ion-label>
-        <ion-select [(ngModel)]="newTaskCategory" name="newTaskCategory" interface="popover">
-          <ion-select-option value="none">Sin categoría</ion-select-option>
-          <ion-select-option *ngFor="let c of vm.categories; trackBy: trackCategory" [value]="c.id">
-            {{ c.name }}
-          </ion-select-option>
-        </ion-select>
-      </ion-item>
-
-      <ion-button expand="block" type="submit" [disabled]="!newTitle.trim()">Agregar</ion-button>
-    </form>
+    <ion-card class="task-entry">
+      <ion-card-header>
+        <ion-card-title>Crear tarea</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Captura los detalles en un modal claro con vista previa de la categoría.</p>
+        <ion-button expand="block" size="large" (click)="openTaskModal(vm.categories)">
+          Nueva tarea
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
 
     <ion-item lines="none" class="filter-item">
       <ion-label>Filtrar por categoría</ion-label>
@@ -102,7 +96,7 @@
                 <h2 [class.completed]="t.completed">{{ t.title }}</h2>
                 <p class="meta">
                   <ng-container *ngIf="t.category; else noCategory">
-                    <ion-chip size="small" [style.background]="t.category.color || '#5260ff'" color="light">
+                    <ion-chip size="small" [style.--background]="t.category.color || '#5260ff'" color="light">
                       <ion-label>{{ t.category.name }}</ion-label>
                     </ion-chip>
                   </ng-container>
@@ -142,7 +136,7 @@
         <ion-button expand="block" fill="outline" (click)="openCategoryForm()">Crear categoría</ion-button>
         <ion-list *ngIf="vm.categorySummary.length; else emptyCategories">
           <ion-item *ngFor="let summary of vm.categorySummary; trackBy: trackCategorySummary">
-            <ion-chip slot="start" [style.background]="summary.category.color || '#5260ff'" color="light">
+            <ion-chip slot="start" [style.--background]="summary.category.color || '#5260ff'" color="light">
               <ion-label>{{ summary.category.name }}</ion-label>
             </ion-chip>
             <ion-label>

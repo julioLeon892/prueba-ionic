@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AlertController, ToastController } from '@ionic/angular';
+import { AlertController, ModalController, ToastController } from '@ionic/angular';
 
 // Componentes standalone de Ionic usados en el HTML
 import {
   IonHeader, IonToolbar, IonTitle, IonContent,
-  IonItem, IonInput, IonSelect, IonSelectOption,
+  IonItem, IonSelect, IonSelectOption,
   IonButton, IonList, IonLabel, IonCheckbox,
   IonCard, IonCardHeader, IonCardTitle, IonCardContent,
   IonBadge, IonChip, IonText, IonItemDivider,
@@ -29,6 +29,8 @@ import { CompleteAllTasksUseCase } from '../../../domain/usecases/complete-all-t
 import { ClearCompletedTasksUseCase } from '../../../domain/usecases/clear-completed-tasks.usecase';
 import { CategorySummary } from '../../../core/models/category-summary';
 import { CloudSyncService } from '../../../infrastructure/firebase/cloud-sync.service';
+import { TaskFormModalComponent, TaskModalResult } from '../../modals/task-form/task-form.modal';
+import { CategoryFormModalComponent } from '../../modals/category-form/category-form.modal';
 import { FirebaseError } from 'firebase/app';
 
 @Component({
@@ -40,7 +42,7 @@ import { FirebaseError } from 'firebase/app';
   imports: [
     CommonModule, FormsModule,
     IonHeader, IonToolbar, IonTitle, IonContent,
-    IonItem, IonInput, IonSelect, IonSelectOption,
+    IonItem, IonSelect, IonSelectOption,
     IonButton, IonList, IonLabel, IonCheckbox,
     IonCard, IonCardHeader, IonCardTitle, IonCardContent,
     IonBadge, IonChip, IonText, IonItemDivider,
@@ -60,9 +62,6 @@ export class HomePage {
 
   // estado local
   selectedCat: string | 'all' | 'none' = 'all';
-  newTitle = '';
-  newTaskCategory: string | 'none' = 'none';
-
   // Remote Config
   bulkEnabled = false;
   welcome = 'Hola';
@@ -80,6 +79,7 @@ export class HomePage {
     private clearCompletedTasks: ClearCompletedTasksUseCase,
     private rc: RemoteConfigService,
     private alertCtrl: AlertController,
+    private modalCtrl: ModalController,
     private toastCtrl: ToastController,
     private cloudSync: CloudSyncService,
   ) {}
@@ -88,17 +88,6 @@ export class HomePage {
     // APP_INITIALIZER ya llamó rc.init(); aquí solo leemos valores
     this.bulkEnabled = this.rc.isBulkActionsEnabled();
     this.welcome = this.rc.getWelcomeMessage();
-  }
-
-  async add() {
-    const title = this.newTitle.trim();
-    if (!title) return;
-    const category = this.newTaskCategory === 'none' ? undefined : this.newTaskCategory;
-    const ok = await this.runAction(() => this.addTask.execute(title, category), 'No pudimos crear la tarea');
-    if (ok) {
-      this.newTitle = '';
-      this.newTaskCategory = 'none';
-    }
   }
 
   onCatChange(v: string | 'all' | 'none') {
@@ -114,44 +103,49 @@ export class HomePage {
     this.safeRun(() => this.setTaskCategory.execute(taskId, normalized), 'No pudimos actualizar la categoría');
   }
 
-  async openCategoryForm(category?: Category) {
-    const alert = await this.alertCtrl.create({
-      header: category ? 'Editar categoría' : 'Nueva categoría',
-      inputs: [
-        {
-          name: 'name',
-          type: 'text',
-          value: category?.name ?? '',
-          attributes: { maxlength: 30 },
-          placeholder: 'Nombre',
-        },
-        {
-          name: 'color',
-          type: 'text',
-          value: category?.color ?? '#3880ff',
-          attributes: { type: 'color' },
-        }
-      ],
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: category ? 'Actualizar' : 'Crear',
-          handler: (data: { name: string; color: string }) => {
-            const name = data?.name?.trim();
-            if (!name) { return false; }
-            const color = data.color ? String(data.color) : undefined;
-            if (category) {
-              this.safeRun(() => this.updateCategory.execute(category.id, name, color), 'No pudimos actualizar la categoría');
-            } else {
-              this.safeRun(() => this.createCategory.execute(name, color), 'No pudimos crear la categoría');
-            }
-            return true;
-          }
-        }
-      ]
+  async openTaskModal(categories: ReadonlyArray<Category>) {
+    const modal = await this.modalCtrl.create({
+      component: TaskFormModalComponent,
+      componentProps: { categories },
+      breakpoints: [0, 0.55, 0.85],
+      initialBreakpoint: 0.6,
     });
 
-    await alert.present();
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<TaskModalResult>();
+    if (role === 'confirm' && data) {
+      await this.runAction(
+        () => this.addTask.execute(data.title, data.categoryId),
+        'No pudimos crear la tarea',
+      );
+    }
+  }
+
+  async openCategoryForm(category?: Category) {
+    const modal = await this.modalCtrl.create({
+      component: CategoryFormModalComponent,
+      componentProps: { category },
+      breakpoints: [0, 0.55, 0.85],
+      initialBreakpoint: 0.6,
+    });
+
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<{ name: string; color?: string }>();
+    if (role !== 'confirm' || !data) {
+      return;
+    }
+
+    if (category) {
+      await this.runAction(
+        () => this.updateCategory.execute(category.id, data.name, data.color),
+        'No pudimos actualizar la categoría',
+      );
+    } else {
+      await this.runAction(
+        () => this.createCategory.execute(data.name, data.color),
+        'No pudimos crear la categoría',
+      );
+    }
   }
 
   async confirmDeleteCategory(category: Category) {
