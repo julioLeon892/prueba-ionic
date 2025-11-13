@@ -10,7 +10,10 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "CI=true ng test --watch=false --browsers=ChromeHeadless",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "generate-icons-android": "npx capacitor-assets generate --android",
+    "generate-icons-ios": "npx capacitor-assets generate --ios",
+    "generate-icons-pwa": "npx capacitor-assets generate --pwa"
   },
   "private": true,
   "dependencies": {
@@ -23,6 +26,7 @@
     "@angular/platform-browser": "^20.0.0",
     "@angular/platform-browser-dynamic": "^20.0.0",
     "@angular/router": "^20.0.0",
+    "@capacitor/android": "7.4.4",
     "@capacitor/app": "7.1.0",
     "@capacitor/core": "7.4.4",
     "@capacitor/haptics": "7.0.2",
@@ -47,7 +51,8 @@
     "@angular/cli": "^20.0.0",
     "@angular/compiler-cli": "^20.0.0",
     "@angular/language-service": "^20.0.0",
-    "@capacitor/cli": "7.4.4",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.4.4",
     "@ionic/angular-toolkit": "^12.0.0",
     "@types/jasmine": "~5.1.0",
     "@types/jest": "^30.0.0",
